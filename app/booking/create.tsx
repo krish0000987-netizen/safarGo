@@ -24,7 +24,7 @@ import { destinations, vehicleTypes } from "@/constants/data";
 type VehicleType = "sedan" | "suv" | "luxury";
 
 export default function CreateBooking() {
-  const { destinationId } = useLocalSearchParams<{ destinationId: string }>();
+  const { destinationId, pickup: pickupParam } = useLocalSearchParams<{ destinationId: string; pickup?: string }>();
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
@@ -34,7 +34,7 @@ export default function CreateBooking() {
 
   const [vehicle, setVehicle] = useState<VehicleType>("sedan");
   const [passengers, setPassengers] = useState(2);
-  const [pickup, setPickup] = useState("Hazratganj, Lucknow");
+  const [pickup, setPickup] = useState(pickupParam || "Hazratganj, Lucknow");
   const [date, setDate] = useState("2026-03-01");
   const [time, setTime] = useState("06:00 AM");
   const [loading, setLoading] = useState(false);
@@ -108,8 +108,10 @@ export default function CreateBooking() {
             <Text style={[styles.destValue, { color: colors.text }]}>{destination.name}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={[styles.destLabel, { color: colors.textSecondary }]}>{destination.distance}</Text>
-            <Text style={[styles.destLabel, { color: colors.textSecondary }]}>{destination.duration}</Text>
+            <Text style={[styles.destLabel, { color: colors.textSecondary }]}>{destination.distance} | {destination.duration}</Text>
+            <View style={styles.pricePerKmBadge}>
+              <Text style={styles.pricePerKmText}>{"\u20B9"}{destination.pricePerKm}/km</Text>
+            </View>
           </View>
         </Animated.View>
 
@@ -232,7 +234,7 @@ export default function CreateBooking() {
         ]}
       >
         <View>
-          <Text style={[styles.fareLabel, { color: colors.textSecondary }]}>Total Fare</Text>
+          <Text style={[styles.fareLabel, { color: colors.textSecondary }]}>Total Fare ({destination.distanceKm > 0 ? `${destination.distanceKm} km` : "Local"})</Text>
           <Text style={styles.fareValue}>{"\u20B9"}{fare.toLocaleString()}</Text>
         </View>
         <Pressable
@@ -274,6 +276,18 @@ const styles = StyleSheet.create({
   },
   destLabel: { fontFamily: "Poppins_400Regular", fontSize: 12 },
   destValue: { fontFamily: "Poppins_600SemiBold", fontSize: 16 },
+  pricePerKmBadge: {
+    backgroundColor: Colors.gold + "20",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  pricePerKmText: {
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 11,
+    color: Colors.gold,
+  },
   label: { fontFamily: "Poppins_500Medium", fontSize: 13, marginBottom: 8, marginTop: 16 },
   inputRow: {
     flexDirection: "row",

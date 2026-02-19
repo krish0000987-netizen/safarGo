@@ -126,7 +126,7 @@ export default function DestinationDetail() {
         ]}
       >
         <View>
-          <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>Starting from</Text>
+          <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>Starting from ({"\u20B9"}{destination.pricePerKm}/km)</Text>
           <Text style={styles.price}>{"\u20B9"}{destination.basePrice.toLocaleString()}</Text>
         </View>
         <Pressable

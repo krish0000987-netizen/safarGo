@@ -25,7 +25,7 @@ import { AppMapView, AppMarker } from "@/components/MapWrapper";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { destinations, Destination, LUCKNOW_CENTER, simulatedDriverLocations } from "@/constants/data";
+import { destinations, Destination, LUCKNOW_CENTER, simulatedDriverLocations, popularPickupLocations, PickupLocation } from "@/constants/data";
 
 const { width, height } = Dimensions.get("window");
 const CARD_WIDTH = (width - 60) / 2;
@@ -43,6 +43,8 @@ const recentSearches = [
   { id: "r2", name: "Kashi Vishwanath, Varanasi", subtitle: "Varanasi, Uttar Pradesh", destId: "2" },
   { id: "r3", name: "Taj Mahal, Agra", subtitle: "Agra, Uttar Pradesh", destId: "4" },
 ];
+
+type SearchField = "pickup" | "destination";
 
 function DestinationCard({ item }: { item: Destination }) {
   return (
@@ -66,6 +68,9 @@ function DestinationCard({ item }: { item: Destination }) {
         <View style={styles.destMeta}>
           <Text style={styles.destPrice}>{"\u20B9"}{item.basePrice.toLocaleString()}</Text>
           <Text style={styles.destDistance}>{item.distance}</Text>
+          <View style={styles.perKmBadge}>
+            <Text style={styles.perKmText}>{"\u20B9"}{item.pricePerKm}/km</Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -76,39 +81,76 @@ function SearchModal({
   visible,
   onClose,
   pickupText,
+  onPickupChange,
   colors,
   isDark,
+  initialField,
 }: {
   visible: boolean;
   onClose: () => void;
   pickupText: string;
+  onPickupChange: (name: string) => void;
   colors: any;
   isDark: boolean;
+  initialField?: SearchField;
 }) {
   const insets = useSafeAreaInsets();
-  const [searchQuery, setSearchQuery] = useState("");
-  const inputRef = useRef<TextInput>(null);
+  const [activeField, setActiveField] = useState<SearchField>(initialField || "destination");
+  const [pickupQuery, setPickupQuery] = useState("");
+  const [destQuery, setDestQuery] = useState("");
+  const pickupRef = useRef<TextInput>(null);
+  const destRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible) {
-      setSearchQuery("");
-      setTimeout(() => inputRef.current?.focus(), 300);
+      setDestQuery("");
+      setPickupQuery("");
+      const field = initialField || "destination";
+      setActiveField(field);
+      setTimeout(() => {
+        if (field === "pickup") pickupRef.current?.focus();
+        else destRef.current?.focus();
+      }, 300);
     }
-  }, [visible]);
+  }, [visible, initialField]);
 
-  const filteredDestinations = searchQuery.trim()
+  const filteredDestinations = destQuery.trim()
     ? destinations.filter(
         (d) =>
-          d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          d.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          d.highlights.some((h) => h.toLowerCase().includes(searchQuery.toLowerCase()))
+          d.name.toLowerCase().includes(destQuery.toLowerCase()) ||
+          d.tagline.toLowerCase().includes(destQuery.toLowerCase()) ||
+          d.highlights.some((h) => h.toLowerCase().includes(destQuery.toLowerCase()))
       )
     : destinations;
+
+  const filteredPickups = pickupQuery.trim()
+    ? popularPickupLocations.filter(
+        (p) =>
+          p.name.toLowerCase().includes(pickupQuery.toLowerCase()) ||
+          p.area.toLowerCase().includes(pickupQuery.toLowerCase())
+      )
+    : popularPickupLocations;
 
   const handleSelectDestination = (dest: Destination) => {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onClose();
-    router.push({ pathname: "/booking/create", params: { destinationId: dest.id } });
+    router.push({ pathname: "/booking/create", params: { destinationId: dest.id, pickup: pickupText } });
+  };
+
+  const handleSelectPickup = (loc: PickupLocation) => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPickupChange(loc.name + ", " + loc.area);
+    setPickupQuery("");
+    setActiveField("destination");
+    setTimeout(() => destRef.current?.focus(), 200);
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPickupChange("Current Location");
+    setPickupQuery("");
+    setActiveField("destination");
+    setTimeout(() => destRef.current?.focus(), 200);
   };
 
   return (
@@ -124,107 +166,206 @@ function SearchModal({
             </Pressable>
 
             <View style={{ flex: 1, gap: 4 }}>
-              <View style={[searchStyles.inputRow, { backgroundColor: colors.surface }]}>
+              <Pressable
+                onPress={() => {
+                  setActiveField("pickup");
+                  setTimeout(() => pickupRef.current?.focus(), 100);
+                }}
+                style={[
+                  searchStyles.inputRow,
+                  {
+                    backgroundColor: colors.surface,
+                    borderWidth: activeField === "pickup" ? 1.5 : 0,
+                    borderColor: activeField === "pickup" ? "#4CAF50" : "transparent",
+                  },
+                ]}
+              >
                 <View style={searchStyles.pickupDot} />
-                <Text style={[searchStyles.pickupText, { color: colors.text }]} numberOfLines={1}>
-                  {pickupText}
-                </Text>
-                <Pressable style={searchStyles.editPickupBtn}>
-                  <Ionicons name="pencil-outline" size={14} color={colors.textSecondary} />
-                </Pressable>
-              </View>
+                {activeField === "pickup" ? (
+                  <TextInput
+                    ref={pickupRef}
+                    style={[searchStyles.searchInput, { color: colors.text }]}
+                    placeholder="Search pickup location"
+                    placeholderTextColor={colors.textTertiary}
+                    value={pickupQuery}
+                    onChangeText={setPickupQuery}
+                  />
+                ) : (
+                  <Text style={[searchStyles.pickupText, { color: colors.text }]} numberOfLines={1}>
+                    {pickupText}
+                  </Text>
+                )}
+                {activeField === "pickup" && pickupQuery.length > 0 && (
+                  <Pressable onPress={() => setPickupQuery("")}>
+                    <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
+                  </Pressable>
+                )}
+              </Pressable>
 
               <View style={searchStyles.inputConnector}>
                 <View style={[searchStyles.connectorLine, { backgroundColor: colors.border }]} />
               </View>
 
-              <View style={[searchStyles.inputRow, searchStyles.destInputRow, { backgroundColor: colors.surface, borderColor: Colors.gold }]}>
+              <Pressable
+                onPress={() => {
+                  setActiveField("destination");
+                  setTimeout(() => destRef.current?.focus(), 100);
+                }}
+                style={[
+                  searchStyles.inputRow,
+                  {
+                    backgroundColor: colors.surface,
+                    borderWidth: activeField === "destination" ? 1.5 : 0,
+                    borderColor: activeField === "destination" ? Colors.gold : "transparent",
+                  },
+                ]}
+              >
                 <View style={searchStyles.destDot} />
                 <TextInput
-                  ref={inputRef}
+                  ref={destRef}
                   style={[searchStyles.searchInput, { color: colors.text }]}
                   placeholder="Where to?"
                   placeholderTextColor={colors.textTertiary}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  autoFocus
+                  value={destQuery}
+                  onChangeText={(t) => {
+                    setDestQuery(t);
+                    setActiveField("destination");
+                  }}
                 />
-                {searchQuery.length > 0 && (
-                  <Pressable onPress={() => setSearchQuery("")}>
+                {destQuery.length > 0 && (
+                  <Pressable onPress={() => setDestQuery("")}>
                     <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
                   </Pressable>
                 )}
-              </View>
+              </Pressable>
             </View>
           </View>
 
-          {!searchQuery.trim() && (
-            <View style={searchStyles.recentSection}>
-              <Text style={[searchStyles.sectionLabel, { color: colors.textSecondary }]}>Recent Searches</Text>
-              {recentSearches.map((item) => (
+          {activeField === "pickup" ? (
+            <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+              <Pressable
+                onPress={handleUseCurrentLocation}
+                style={({ pressed }) => [
+                  searchStyles.currentLocRow,
+                  { backgroundColor: pressed ? colors.surface : "transparent" },
+                ]}
+              >
+                <View style={[searchStyles.currentLocIcon, { backgroundColor: "#E3F2FD" }]}>
+                  <Ionicons name="navigate" size={18} color="#1976D2" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[searchStyles.currentLocTitle, { color: "#1976D2" }]}>Use Current Location</Text>
+                  <Text style={[searchStyles.currentLocSub, { color: colors.textSecondary }]}>Detect via GPS</Text>
+                </View>
+                <Ionicons name="locate-outline" size={18} color="#1976D2" />
+              </Pressable>
+
+              <View style={[searchStyles.divider, { backgroundColor: colors.border }]} />
+
+              <Text style={[searchStyles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: 20, marginTop: 12 }]}>
+                {pickupQuery.trim() ? `${filteredPickups.length} location${filteredPickups.length !== 1 ? "s" : ""}` : "Popular Pickup Points"}
+              </Text>
+              {filteredPickups.map((loc) => (
                 <Pressable
-                  key={item.id}
-                  onPress={() => {
-                    const dest = destinations.find((d) => d.id === item.destId);
-                    if (dest) handleSelectDestination(dest);
-                  }}
+                  key={loc.id}
+                  onPress={() => handleSelectPickup(loc)}
                   style={({ pressed }) => [
-                    searchStyles.recentItem,
+                    searchStyles.pickupItem,
                     { backgroundColor: pressed ? colors.surface : "transparent" },
                   ]}
                 >
                   <View style={[searchStyles.recentIcon, { backgroundColor: isDark ? "#2A2A2A" : "#F0F0F0" }]}>
-                    <Ionicons name="time-outline" size={18} color={colors.textSecondary} />
+                    <Ionicons name="location-outline" size={18} color={colors.textSecondary} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[searchStyles.recentName, { color: colors.text }]}>{item.name}</Text>
-                    <Text style={[searchStyles.recentSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
+                    <Text style={[searchStyles.recentName, { color: colors.text }]}>{loc.name}</Text>
+                    <Text style={[searchStyles.recentSubtitle, { color: colors.textSecondary }]}>{loc.area}</Text>
                   </View>
                   <Ionicons name="arrow-forward" size={16} color={colors.textTertiary} />
                 </Pressable>
               ))}
-            </View>
-          )}
-
-          <View style={[searchStyles.divider, { backgroundColor: colors.border }]} />
-
-          <Text style={[searchStyles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: 20, marginTop: 12 }]}>
-            {searchQuery.trim() ? `${filteredDestinations.length} result${filteredDestinations.length !== 1 ? "s" : ""}` : "All Destinations"}
-          </Text>
-
-          <FlatList
-            data={filteredDestinations}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingBottom: 40 }}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => handleSelectDestination(item)}
-                style={({ pressed }) => [
-                  searchStyles.destResult,
-                  { backgroundColor: pressed ? colors.surface : "transparent" },
-                ]}
-              >
-                <Image source={item.image} style={searchStyles.destThumb} contentFit="cover" />
-                <View style={{ flex: 1 }}>
-                  <Text style={[searchStyles.destResultName, { color: colors.text }]}>{item.name}</Text>
-                  <Text style={[searchStyles.destResultTagline, { color: colors.textSecondary }]}>{item.tagline}</Text>
-                  <View style={searchStyles.destResultMeta}>
-                    <Ionicons name="navigate-outline" size={12} color={Colors.gold} />
-                    <Text style={[searchStyles.destResultDist, { color: colors.textSecondary }]}>{item.distance}</Text>
-                    <Text style={searchStyles.destResultPrice}>From {"\u20B9"}{item.basePrice.toLocaleString()}</Text>
-                  </View>
+              {filteredPickups.length === 0 && (
+                <View style={searchStyles.emptySearch}>
+                  <Ionicons name="location-outline" size={40} color={colors.textTertiary} />
+                  <Text style={[searchStyles.emptyText, { color: colors.textSecondary }]}>No locations found</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-              </Pressable>
-            )}
-            ListEmptyComponent={
-              <View style={searchStyles.emptySearch}>
-                <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
-                <Text style={[searchStyles.emptyText, { color: colors.textSecondary }]}>No destinations found</Text>
-                <Text style={[searchStyles.emptySubtext, { color: colors.textTertiary }]}>Try a different search term</Text>
-              </View>
-            }
-          />
+              )}
+            </ScrollView>
+          ) : (
+            <>
+              {!destQuery.trim() && (
+                <View style={searchStyles.recentSection}>
+                  <Text style={[searchStyles.sectionLabel, { color: colors.textSecondary }]}>Recent Searches</Text>
+                  {recentSearches.map((item) => (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => {
+                        const dest = destinations.find((d) => d.id === item.destId);
+                        if (dest) handleSelectDestination(dest);
+                      }}
+                      style={({ pressed }) => [
+                        searchStyles.recentItem,
+                        { backgroundColor: pressed ? colors.surface : "transparent" },
+                      ]}
+                    >
+                      <View style={[searchStyles.recentIcon, { backgroundColor: isDark ? "#2A2A2A" : "#F0F0F0" }]}>
+                        <Ionicons name="time-outline" size={18} color={colors.textSecondary} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[searchStyles.recentName, { color: colors.text }]}>{item.name}</Text>
+                        <Text style={[searchStyles.recentSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
+                      </View>
+                      <Ionicons name="arrow-forward" size={16} color={colors.textTertiary} />
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+
+              <View style={[searchStyles.divider, { backgroundColor: colors.border }]} />
+
+              <Text style={[searchStyles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: 20, marginTop: 12 }]}>
+                {destQuery.trim() ? `${filteredDestinations.length} result${filteredDestinations.length !== 1 ? "s" : ""}` : "All Destinations"}
+              </Text>
+
+              <FlatList
+                data={filteredDestinations}
+                keyExtractor={(item) => item.id}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 40 }}
+                renderItem={({ item }) => (
+                  <Pressable
+                    onPress={() => handleSelectDestination(item)}
+                    style={({ pressed }) => [
+                      searchStyles.destResult,
+                      { backgroundColor: pressed ? colors.surface : "transparent" },
+                    ]}
+                  >
+                    <Image source={item.image} style={searchStyles.destThumb} contentFit="cover" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[searchStyles.destResultName, { color: colors.text }]}>{item.name}</Text>
+                      <Text style={[searchStyles.destResultTagline, { color: colors.textSecondary }]}>{item.tagline}</Text>
+                      <View style={searchStyles.destResultMeta}>
+                        <Ionicons name="navigate-outline" size={12} color={Colors.gold} />
+                        <Text style={[searchStyles.destResultDist, { color: colors.textSecondary }]}>{item.distance}</Text>
+                        <View style={searchStyles.pricePerKmBadge}>
+                          <Text style={searchStyles.pricePerKmText}>{"\u20B9"}{item.pricePerKm}/km</Text>
+                        </View>
+                        <Text style={searchStyles.destResultPrice}>{"\u20B9"}{item.basePrice.toLocaleString()}</Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+                  </Pressable>
+                )}
+                ListEmptyComponent={
+                  <View style={searchStyles.emptySearch}>
+                    <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
+                    <Text style={[searchStyles.emptyText, { color: colors.textSecondary }]}>No destinations found</Text>
+                    <Text style={[searchStyles.emptySubtext, { color: colors.textTertiary }]}>Try a different search term</Text>
+                  </View>
+                }
+              />
+            </>
+          )}
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -241,6 +382,7 @@ export default function BookScreen() {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
   const [driverPositions, setDriverPositions] = useState(simulatedDriverLocations);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [searchField, setSearchField] = useState<SearchField>("destination");
   const [pickupLabel, setPickupLabel] = useState("Detecting location...");
   const [locationDetected, setLocationDetected] = useState(false);
 
@@ -412,30 +554,36 @@ export default function BookScreen() {
                 </View>
               )}
 
-              <Pressable
-                onPress={() => {
-                  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSearchVisible(true);
-                }}
-                style={[styles.searchOverlay, { backgroundColor: colors.surface }]}
-              >
-                <View style={styles.searchPickupRow}>
+              <View style={[styles.searchOverlay, { backgroundColor: colors.surface }]}>
+                <Pressable
+                  onPress={() => {
+                    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSearchField("pickup");
+                    setSearchVisible(true);
+                  }}
+                  style={styles.searchPickupRow}
+                >
                   <View style={styles.searchPickupDot} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.searchPickupLabel, { color: colors.text }]} numberOfLines={1}>{pickupLabel}</Text>
-                    {locationDetected && (
-                      <Text style={[styles.searchPickupSub, { color: colors.textSecondary }]}>Pickup</Text>
-                    )}
+                    <Text style={[styles.searchPickupSub, { color: colors.textSecondary }]}>Tap to change pickup</Text>
                   </View>
                   <Ionicons name="navigate" size={16} color={locationDetected ? "#4CAF50" : colors.textTertiary} />
-                </View>
+                </Pressable>
                 <View style={[styles.searchDividerLine, { backgroundColor: colors.border }]} />
-                <View style={styles.searchDestRow}>
+                <Pressable
+                  onPress={() => {
+                    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSearchField("destination");
+                    setSearchVisible(true);
+                  }}
+                  style={styles.searchDestRow}
+                >
                   <View style={styles.searchDestDot} />
                   <Text style={[styles.searchDestPlaceholder, { color: colors.textTertiary }]}>Where to?</Text>
                   <Ionicons name="search" size={16} color={Colors.gold} />
-                </View>
-              </Pressable>
+                </Pressable>
+              </View>
 
               <View style={styles.driverCountBadge}>
                 <View style={driverStyles.liveDot} />
@@ -510,8 +658,10 @@ export default function BookScreen() {
         visible={searchVisible}
         onClose={() => setSearchVisible(false)}
         pickupText={pickupLabel}
+        onPickupChange={(name) => setPickupLabel(name)}
         colors={colors}
         isDark={isDark}
+        initialField={searchField}
       />
     </>
   );
@@ -667,6 +817,48 @@ const searchStyles = StyleSheet.create({
   emptySubtext: {
     fontFamily: "Poppins_400Regular",
     fontSize: 13,
+  },
+  currentLocRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  currentLocIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  currentLocTitle: {
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 14,
+  },
+  currentLocSub: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+  },
+  pickupItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  pricePerKmBadge: {
+    backgroundColor: Colors.gold + "20",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginRight: 4,
+  },
+  pricePerKmText: {
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 10,
+    color: Colors.gold,
   },
 });
 
@@ -972,5 +1164,16 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     fontSize: 12,
     color: "rgba(255,255,255,0.7)",
+  },
+  perKmBadge: {
+    backgroundColor: "rgba(197,165,90,0.3)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  perKmText: {
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 10,
+    color: Colors.gold,
   },
 });

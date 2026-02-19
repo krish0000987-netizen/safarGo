@@ -5,8 +5,10 @@ export interface Destination {
   description: string;
   image: any;
   distance: string;
+  distanceKm: number;
   duration: string;
   basePrice: number;
+  pricePerKm: number;
   rating: number;
   reviewCount: number;
   highlights: string[];
@@ -14,6 +16,27 @@ export interface Destination {
   latitude: number;
   longitude: number;
 }
+
+export interface PickupLocation {
+  id: string;
+  name: string;
+  area: string;
+  latitude: number;
+  longitude: number;
+}
+
+export const popularPickupLocations: PickupLocation[] = [
+  { id: "p1", name: "Hazratganj", area: "Central Lucknow", latitude: 26.8500, longitude: 80.9430 },
+  { id: "p2", name: "Gomti Nagar", area: "East Lucknow", latitude: 26.8560, longitude: 80.9820 },
+  { id: "p3", name: "Aliganj", area: "North Lucknow", latitude: 26.8800, longitude: 80.9300 },
+  { id: "p4", name: "Alambagh", area: "South Lucknow", latitude: 26.8100, longitude: 80.9100 },
+  { id: "p5", name: "Charbagh Railway Station", area: "Central Lucknow", latitude: 26.8356, longitude: 80.9189 },
+  { id: "p6", name: "Amausi Airport", area: "Lucknow Airport", latitude: 26.7606, longitude: 80.8893 },
+  { id: "p7", name: "Indira Nagar", area: "East Lucknow", latitude: 26.8700, longitude: 80.9900 },
+  { id: "p8", name: "Mahanagar", area: "Central Lucknow", latitude: 26.8700, longitude: 80.9350 },
+  { id: "p9", name: "Rajajipuram", area: "West Lucknow", latitude: 26.8550, longitude: 80.9050 },
+  { id: "p10", name: "Chinhat", area: "East Lucknow", latitude: 26.8800, longitude: 81.0200 },
+];
 
 export interface BookingData {
   id: string;
@@ -62,8 +85,10 @@ export const destinations: Destination[] = [
       "Ayodhya, the birthplace of Lord Ram, is a city of immense spiritual significance. Visit the grand Ram Mandir, explore ancient temples, and experience the divine evening aarti on the banks of the Saryu River.",
     image: require("@/assets/images/destinations/ayodhya.jpg"),
     distance: "134 km",
+    distanceKm: 134,
     duration: "2h 30m",
     basePrice: 2499,
+    pricePerKm: 18.6,
     rating: 4.8,
     reviewCount: 1247,
     highlights: [
@@ -84,8 +109,10 @@ export const destinations: Destination[] = [
       "Varanasi, one of the oldest living cities in the world, offers a mesmerizing blend of spirituality and culture. Witness the iconic Ganga Aarti, explore narrow lanes filled with ancient temples, and take a sunrise boat ride.",
     image: require("@/assets/images/destinations/varanasi.jpg"),
     distance: "320 km",
+    distanceKm: 320,
     duration: "5h 15m",
     basePrice: 4999,
+    pricePerKm: 15.6,
     rating: 4.9,
     reviewCount: 3456,
     highlights: [
@@ -106,8 +133,10 @@ export const destinations: Destination[] = [
       "Experience the royal heritage of Lucknow with its magnificent Mughal architecture, legendary cuisine, and warm hospitality. From Bara Imambara to the bustling markets of Aminabad, every corner tells a story.",
     image: require("@/assets/images/destinations/lucknow.jpg"),
     distance: "0 km",
+    distanceKm: 0,
     duration: "Local",
     basePrice: 999,
+    pricePerKm: 20.0,
     rating: 4.7,
     reviewCount: 2189,
     highlights: [
@@ -128,8 +157,10 @@ export const destinations: Destination[] = [
       "Home to the iconic Taj Mahal, Agra is a testament to Mughal grandeur. Beyond the Taj, discover the majestic Agra Fort, the exquisite Itimad-ud-Daulah, and savor the famous Agra Petha.",
     image: require("@/assets/images/destinations/agra.jpg"),
     distance: "335 km",
+    distanceKm: 335,
     duration: "5h 30m",
     basePrice: 5499,
+    pricePerKm: 16.4,
     rating: 4.9,
     reviewCount: 5672,
     highlights: [
@@ -150,8 +181,10 @@ export const destinations: Destination[] = [
       "Mathura, the birthplace of Lord Krishna, is a vibrant holy city filled with colorful temples, sacred ghats, and the joyous spirit of devotion. Experience the famous Holi celebrations and visit Vrindavan nearby.",
     image: require("@/assets/images/destinations/mathura.jpg"),
     distance: "280 km",
+    distanceKm: 280,
     duration: "4h 45m",
     basePrice: 4299,
+    pricePerKm: 15.4,
     rating: 4.6,
     reviewCount: 1834,
     highlights: [
@@ -172,8 +205,10 @@ export const destinations: Destination[] = [
       "Prayagraj, where the sacred rivers Ganga, Yamuna, and the mythical Saraswati converge, is one of India's holiest cities. Visit the Triveni Sangam, Anand Bhawan, and experience the grandeur of the Kumbh Mela grounds.",
     image: require("@/assets/images/destinations/prayagraj.jpg"),
     distance: "198 km",
+    distanceKm: 198,
     duration: "3h 30m",
     basePrice: 3499,
+    pricePerKm: 17.7,
     rating: 4.5,
     reviewCount: 1456,
     highlights: [
