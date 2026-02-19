@@ -11,6 +11,8 @@ export interface Destination {
   reviewCount: number;
   highlights: string[];
   popular: boolean;
+  latitude: number;
+  longitude: number;
 }
 
 export interface BookingData {
@@ -71,6 +73,8 @@ export const destinations: Destination[] = [
       "Kanak Bhawan",
     ],
     popular: true,
+    latitude: 26.7922,
+    longitude: 82.1998,
   },
   {
     id: "2",
@@ -91,6 +95,8 @@ export const destinations: Destination[] = [
       "Sarnath",
     ],
     popular: true,
+    latitude: 25.3176,
+    longitude: 82.9739,
   },
   {
     id: "3",
@@ -111,6 +117,8 @@ export const destinations: Destination[] = [
       "Rumi Darwaza",
     ],
     popular: false,
+    latitude: 26.8467,
+    longitude: 80.9462,
   },
   {
     id: "4",
@@ -131,6 +139,8 @@ export const destinations: Destination[] = [
       "Fatehpur Sikri",
     ],
     popular: true,
+    latitude: 27.1767,
+    longitude: 78.0081,
   },
   {
     id: "5",
@@ -151,6 +161,8 @@ export const destinations: Destination[] = [
       "Govardhan Hill",
     ],
     popular: false,
+    latitude: 27.4924,
+    longitude: 77.6737,
   },
   {
     id: "6",
@@ -171,7 +183,19 @@ export const destinations: Destination[] = [
       "Khusro Bagh",
     ],
     popular: false,
+    latitude: 25.4358,
+    longitude: 81.8463,
   },
+];
+
+export const LUCKNOW_CENTER = { latitude: 26.8467, longitude: 80.9462 };
+
+export const simulatedDriverLocations = [
+  { id: "d1", name: "Rajesh K.", vehicle: "Toyota Innova", latitude: 26.8550, longitude: 80.9550, rating: 4.8 },
+  { id: "d2", name: "Amit S.", vehicle: "Maruti Ertiga", latitude: 26.8400, longitude: 80.9350, rating: 4.6 },
+  { id: "d3", name: "Vikram P.", vehicle: "Mercedes V-Class", latitude: 26.8520, longitude: 80.9600, rating: 4.9 },
+  { id: "d4", name: "Pradeep M.", vehicle: "Honda City", latitude: 26.8380, longitude: 80.9500, rating: 4.5 },
+  { id: "d5", name: "Sunil R.", vehicle: "Hyundai Creta", latitude: 26.8600, longitude: 80.9400, rating: 4.7 },
 ];
 
 export const vehicleTypes = {
