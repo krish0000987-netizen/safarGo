@@ -19,7 +19,7 @@ interface AppMapViewProps {
   children?: React.ReactNode;
 }
 
-export function AppMapView({ style, initialRegion, markers }: AppMapViewProps) {
+export function AppMapView({ style, initialRegion, showsUserLocation }: AppMapViewProps) {
   const lat = initialRegion?.latitude || 26.8467;
   const lng = initialRegion?.longitude || 80.9462;
 
@@ -30,6 +30,12 @@ export function AppMapView({ style, initialRegion, markers }: AppMapViewProps) {
         style={{ width: "100%", height: "100%", border: "none" } as any}
         title="Map"
       />
+      {showsUserLocation && (
+        <View style={webStyles.locationBadge}>
+          <View style={webStyles.locationDot} />
+          <Text style={webStyles.locationText}>Your Location</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -46,5 +52,35 @@ const webStyles = StyleSheet.create({
   container: {
     position: "relative",
     overflow: "hidden",
+  },
+  locationBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  locationDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#4285F4",
+    borderWidth: 2,
+    borderColor: "#FFF",
+  },
+  locationText: {
+    fontFamily: "Poppins_500Medium",
+    fontSize: 11,
+    color: "#333",
   },
 });

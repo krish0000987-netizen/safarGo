@@ -241,27 +241,40 @@ export default function BookScreen() {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
   const [driverPositions, setDriverPositions] = useState(simulatedDriverLocations);
   const [searchVisible, setSearchVisible] = useState(false);
-  const [pickupLabel, setPickupLabel] = useState("Current Location");
+  const [pickupLabel, setPickupLabel] = useState("Detecting location...");
+  const [locationDetected, setLocationDetected] = useState(false);
 
   useEffect(() => {
     (async () => {
       if (Platform.OS === "web") {
         try {
           navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+            async (pos) => {
+              const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+              setUserLocation(coords);
               setLocationPermission(true);
+              setLocationDetected(true);
               setPickupLabel("Current Location");
+              try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`);
+                const data = await res.json();
+                if (data?.display_name) {
+                  const parts = data.display_name.split(",");
+                  setPickupLabel(parts.slice(0, 2).join(",").trim());
+                }
+              } catch {}
             },
             () => {
               setUserLocation(LUCKNOW_CENTER);
               setLocationPermission(false);
+              setLocationDetected(false);
               setPickupLabel("Lucknow, Uttar Pradesh");
             }
           );
         } catch {
           setUserLocation(LUCKNOW_CENTER);
           setLocationPermission(false);
+          setLocationDetected(false);
           setPickupLabel("Lucknow, Uttar Pradesh");
         }
       } else {
@@ -269,10 +282,26 @@ export default function BookScreen() {
         if (status === "granted") {
           setLocationPermission(true);
           const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-          setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-          setPickupLabel("Current Location");
+          const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+          setUserLocation(coords);
+          setLocationDetected(true);
+          try {
+            const [address] = await Location.reverseGeocodeAsync(coords);
+            if (address) {
+              const label = [address.name, address.street, address.city || address.subregion]
+                .filter(Boolean)
+                .slice(0, 2)
+                .join(", ");
+              setPickupLabel(label || "Current Location");
+            } else {
+              setPickupLabel("Current Location");
+            }
+          } catch {
+            setPickupLabel("Current Location");
+          }
         } else {
           setLocationPermission(false);
+          setLocationDetected(false);
           setUserLocation(LUCKNOW_CENTER);
           setPickupLabel("Lucknow, Uttar Pradesh");
         }
@@ -343,11 +372,11 @@ export default function BookScreen() {
                   description: d.vehicle,
                 }))}
               >
-                {!locationPermission && userLocation && (
+                {userLocation && (
                   <AppMarker
                     coordinate={userLocation}
                     title="Your Location"
-                    description="Lucknow, Uttar Pradesh"
+                    description={pickupLabel}
                   >
                     <View style={driverStyles.userPin}>
                       <View style={driverStyles.userPinInner} />
@@ -392,7 +421,13 @@ export default function BookScreen() {
               >
                 <View style={styles.searchPickupRow}>
                   <View style={styles.searchPickupDot} />
-                  <Text style={[styles.searchPickupLabel, { color: colors.text }]} numberOfLines={1}>{pickupLabel}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.searchPickupLabel, { color: colors.text }]} numberOfLines={1}>{pickupLabel}</Text>
+                    {locationDetected && (
+                      <Text style={[styles.searchPickupSub, { color: colors.textSecondary }]}>Pickup</Text>
+                    )}
+                  </View>
+                  <Ionicons name="navigate" size={16} color={locationDetected ? "#4CAF50" : colors.textTertiary} />
                 </View>
                 <View style={[styles.searchDividerLine, { backgroundColor: colors.border }]} />
                 <View style={styles.searchDestRow}>
@@ -775,7 +810,11 @@ const styles = StyleSheet.create({
   searchPickupLabel: {
     fontFamily: "Poppins_500Medium",
     fontSize: 14,
-    flex: 1,
+  },
+  searchPickupSub: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 11,
+    marginTop: 1,
   },
   searchDividerLine: {
     height: 1,
