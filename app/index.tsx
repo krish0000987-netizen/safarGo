@@ -64,16 +64,29 @@ export default function WelcomeScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(400).duration(800)} style={styles.textSection}>
-          <Text style={styles.brandName}>SAFAR GO</Text>
-          <View style={styles.divider} />
-          <Text style={styles.tagline}>Premium Inter-City Travel</Text>
+          <Text style={styles.brandName}>Safar Go</Text>
+          <Text style={styles.tagline}>PREMIUM TRAVEL{"\n"}EXPERIENCE</Text>
           <Text style={styles.subtitle}>
-            Experience luxury travel across the spiritual heartland of India.
-            Ayodhya, Varanasi, Agra and beyond.
+            Discover India's finest destinations{"\n"}with our luxury car-hire service.{"\n"}Travel in comfort and style.
           </Text>
         </Animated.View>
 
         <Animated.View entering={FadeInUp.delay(600).duration(800)} style={styles.bottomSection}>
+          <View style={styles.featuresRow}>
+            <View style={styles.feature}>
+              <Ionicons name="checkmark-circle" size={22} color={Colors.gold} />
+              <Text style={styles.featureText}>Verified Drivers</Text>
+            </View>
+            <View style={styles.feature}>
+              <Ionicons name="star" size={22} color={Colors.gold} />
+              <Text style={styles.featureText}>Luxury Fleet</Text>
+            </View>
+            <View style={styles.feature}>
+              <Ionicons name="time" size={22} color={Colors.gold} />
+              <Text style={styles.featureText}>24/7 Service</Text>
+            </View>
+          </View>
+
           <Pressable
             onPress={handleGetStarted}
             style={({ pressed }) => [
@@ -91,23 +104,6 @@ export default function WelcomeScreen() {
               <Ionicons name="arrow-forward" size={20} color="#0A0A0A" />
             </LinearGradient>
           </Pressable>
-
-          <View style={styles.featuresRow}>
-            <View style={styles.feature}>
-              <Ionicons name="shield-checkmark-outline" size={18} color={Colors.gold} />
-              <Text style={styles.featureText}>Verified Drivers</Text>
-            </View>
-            <View style={styles.featureDot} />
-            <View style={styles.feature}>
-              <Ionicons name="diamond-outline" size={18} color={Colors.gold} />
-              <Text style={styles.featureText}>Luxury Fleet</Text>
-            </View>
-            <View style={styles.featureDot} />
-            <View style={styles.feature}>
-              <Ionicons name="time-outline" size={18} color={Colors.gold} />
-              <Text style={styles.featureText}>24/7 Service</Text>
-            </View>
-          </View>
         </Animated.View>
       </View>
     </View>
@@ -154,22 +150,18 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontFamily: "PlayfairDisplay_700Bold",
-    fontSize: 42,
+    fontSize: 46,
     color: "#F5F5F5",
-    letterSpacing: 8,
-  },
-  divider: {
-    width: 60,
-    height: 2,
-    backgroundColor: Colors.gold,
-    borderRadius: 1,
+    letterSpacing: 2,
   },
   tagline: {
     fontFamily: "Poppins_500Medium",
-    fontSize: 16,
+    fontSize: 15,
     color: Colors.gold,
-    letterSpacing: 3,
+    letterSpacing: 4,
     textTransform: "uppercase",
+    textAlign: "center",
+    lineHeight: 24,
   },
   subtitle: {
     fontFamily: "Poppins_400Regular",
@@ -181,7 +173,7 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     alignItems: "center",
-    gap: 28,
+    gap: 24,
   },
   getStartedBtn: {
     width: "100%",
@@ -203,22 +195,16 @@ const styles = StyleSheet.create({
   featuresRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
+    gap: 32,
   },
   feature: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
   featureText: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 11,
-    color: "rgba(255,255,255,0.4)",
-  },
-  featureDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    fontSize: 12,
+    color: "rgba(255,255,255,0.5)",
   },
 });
