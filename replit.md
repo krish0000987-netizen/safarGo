@@ -26,6 +26,8 @@ Preferred communication style: Simple, everyday language.
 - **Tab bars**: Support for native iOS tab bars via `expo-router/unstable-native-tabs` with `expo-glass-effect` detection, falling back to classic tab layout on other platforms
 - **Animations**: `react-native-reanimated` for enter animations (FadeInDown, FadeInUp)
 - **Haptic feedback**: `expo-haptics` used on button presses and interactions (guarded by platform check for web)
+- **Maps**: `react-native-maps@1.18.0` (pinned for Expo Go) on native, OpenStreetMap iframe on web. Platform-specific files: `components/MapWrapper.tsx` (native) and `components/MapWrapper.web.tsx` (web fallback). Uses `expo-location` for user location. Simulated driver positions in `constants/data.ts`.
+- **Driver tracking**: My Rides screen has "Track Driver" button on confirmed/in_progress bookings, opens full-screen map modal with live driver position, route polyline, and bottom sheet with driver info
 
 ### Backend (Express.js)
 
