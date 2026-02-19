@@ -4,7 +4,7 @@ import { Tabs } from "expo-router";
 import { NativeTabs, Icon, Label } from "expo-router/unstable-native-tabs";
 import { BlurView } from "expo-blur";
 import { Platform, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -12,16 +12,20 @@ function NativeTabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Home</Label>
+        <Icon sf={{ default: "book", selected: "book.fill" }} />
+        <Label>Book</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="bookings">
-        <Icon sf={{ default: "calendar", selected: "calendar" }} />
-        <Label>Bookings</Label>
+      <NativeTabs.Trigger name="rides">
+        <Icon sf={{ default: "car.side", selected: "car.side.fill" }} />
+        <Label>My Rides</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
         <Label>Profile</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="destinations">
+        <Icon sf={{ default: "mappin.and.ellipse", selected: "mappin.and.ellipse" }} />
+        <Label>destination</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -58,18 +62,18 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "home" : "home-outline"} size={22} color={color} />
+          title: "Book",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="menu-book" size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="bookings"
+        name="rides"
         options={{
-          title: "Bookings",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={22} color={color} />
+          title: "My Rides",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="directions-car" size={24} color={color} />
           ),
         }}
       />
@@ -79,6 +83,15 @@ function ClassicTabLayout() {
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "person" : "person-outline"} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="destinations"
+        options={{
+          title: "destination",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="location-outline" size={22} color={color} />
           ),
         }}
       />
