@@ -11,13 +11,13 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import { AppMapView, AppMarker } from "@/components/MapWrapper";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,19 +33,6 @@ const quickActions = [
   { icon: "chatbubble-ellipses", label: "Support", color: "#FF9800", bg: "#FFF3E0", onPress: () => {} },
   { icon: "wallet", label: "Wallet", color: "#1976D2", bg: "#E3F2FD", onPress: () => {} },
 ];
-
-function DriverMarkerCallout({ driver }: { driver: typeof simulatedDriverLocations[0] }) {
-  return (
-    <View style={driverStyles.callout}>
-      <Text style={driverStyles.calloutName}>{driver.name}</Text>
-      <Text style={driverStyles.calloutVehicle}>{driver.vehicle}</Text>
-      <View style={driverStyles.calloutRating}>
-        <Ionicons name="star" size={12} color={Colors.gold} />
-        <Text style={driverStyles.calloutRatingText}>{driver.rating}</Text>
-      </View>
-    </View>
-  );
-}
 
 function DestinationCard({ item }: { item: Destination }) {
   return (
@@ -79,7 +66,7 @@ export default function BookScreen() {
   const insets = useSafeAreaInsets();
   const { colors, isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
 
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
@@ -164,62 +151,73 @@ export default function BookScreen() {
 
       <View style={styles.mapSection}>
         {userLocation ? (
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            provider={PROVIDER_DEFAULT}
-            initialRegion={mapRegion}
-            showsUserLocation={locationPermission === true}
-            showsMyLocationButton={false}
-            showsCompass={false}
-          >
-            {!locationPermission && userLocation && (
-              <Marker
-                coordinate={userLocation}
-                title="Your Location"
-                description="Lucknow, Uttar Pradesh"
-              >
-                <View style={driverStyles.userPin}>
-                  <View style={driverStyles.userPinInner} />
-                </View>
-              </Marker>
-            )}
+          <>
+            <AppMapView
+              mapRef={mapRef}
+              style={styles.map}
+              initialRegion={mapRegion}
+              showsUserLocation={locationPermission === true}
+              showsMyLocationButton={false}
+              showsCompass={false}
+              markers={driverPositions.map((d) => ({
+                id: d.id,
+                coordinate: { latitude: d.latitude, longitude: d.longitude },
+                title: d.name,
+                description: d.vehicle,
+              }))}
+            >
+              {!locationPermission && userLocation && (
+                <AppMarker
+                  coordinate={userLocation}
+                  title="Your Location"
+                  description="Lucknow, Uttar Pradesh"
+                >
+                  <View style={driverStyles.userPin}>
+                    <View style={driverStyles.userPinInner} />
+                  </View>
+                </AppMarker>
+              )}
 
-            {driverPositions.map((driver) => (
-              <Marker
-                key={driver.id}
-                coordinate={{ latitude: driver.latitude, longitude: driver.longitude }}
-                title={driver.name}
-                description={`${driver.vehicle} | ${driver.rating}`}
-              >
-                <View style={driverStyles.driverPin}>
-                  <Ionicons name="car" size={16} color="#FFF" />
+              {driverPositions.map((driver) => (
+                <AppMarker
+                  key={driver.id}
+                  coordinate={{ latitude: driver.latitude, longitude: driver.longitude }}
+                  title={driver.name}
+                  description={`${driver.vehicle} | ${driver.rating}`}
+                >
+                  <View style={driverStyles.driverPin}>
+                    <Ionicons name="car" size={16} color="#FFF" />
+                  </View>
+                </AppMarker>
+              ))}
+            </AppMapView>
+            {Platform.OS !== "web" && (
+              <>
+                <View style={styles.mapOverlay}>
+                  <Pressable
+                    onPress={() => {
+                      if (mapRef.current && userLocation) {
+                        mapRef.current.animateToRegion(mapRegion, 500);
+                      }
+                    }}
+                    style={[styles.mapBtn, { backgroundColor: colors.surface }]}
+                  >
+                    <Ionicons name="locate" size={18} color={Colors.gold} />
+                  </Pressable>
                 </View>
-              </Marker>
-            ))}
-          </MapView>
+                <View style={styles.driverCountBadge}>
+                  <View style={driverStyles.liveDot} />
+                  <Text style={styles.driverCountText}>{driverPositions.length} drivers nearby</Text>
+                </View>
+              </>
+            )}
+          </>
         ) : (
           <View style={[styles.map, styles.mapLoading, { backgroundColor: colors.surface }]}>
             <ActivityIndicator size="small" color={Colors.gold} />
             <Text style={[styles.mapLoadingText, { color: colors.textSecondary }]}>Loading map...</Text>
           </View>
         )}
-        <View style={styles.mapOverlay}>
-          <Pressable
-            onPress={() => {
-              if (mapRef.current && userLocation) {
-                mapRef.current.animateToRegion(mapRegion, 500);
-              }
-            }}
-            style={[styles.mapBtn, { backgroundColor: colors.surface }]}
-          >
-            <Ionicons name="locate" size={18} color={Colors.gold} />
-          </Pressable>
-        </View>
-        <View style={styles.driverCountBadge}>
-          <View style={driverStyles.liveDot} />
-          <Text style={styles.driverCountText}>{driverPositions.length} drivers nearby</Text>
-        </View>
       </View>
 
       <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.quickActionsSection}>
@@ -311,29 +309,6 @@ const driverStyles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: "#4CAF50",
-  },
-  callout: {
-    padding: 8,
-    minWidth: 120,
-  },
-  calloutName: {
-    fontWeight: "600" as const,
-    fontSize: 14,
-    marginBottom: 2,
-  },
-  calloutVehicle: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 4,
-  },
-  calloutRating: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  calloutRatingText: {
-    fontSize: 12,
-    fontWeight: "500" as const,
   },
 });
 
