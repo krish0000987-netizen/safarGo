@@ -1,0 +1,192 @@
+Goal: Add new customer app, driver app, and admin panel features without breaking current system.
+Requirement: Clean UI, fast performance, scalable backend, mobile responsive, secure data.
+
+🚀 1. CUSTOMER APP FEATURES TO ADD
+
+Add the following features into the customer app:
+
+📍 Maps & Ride Tracking
+
+Google Maps Integration
+
+Live pickup & drop selection
+
+Route optimization
+
+Distance & fare estimation
+
+Real-Time Driver Location Tracking
+
+Show driver moving on map
+
+Refresh every 3–5 seconds
+
+ETA (Estimated Arrival Time)
+
+Show driver arrival time
+
+Show trip duration estimate
+
+🎟️ Offers & Payments
+
+Apply Coupon / Promo Code
+
+Admin can create coupons
+
+Expiry date & usage limit
+
+Flat or percentage discount
+
+Invoice Download (PDF – Optional)
+
+Ride details
+
+GST / tax included
+
+Download & email option
+
+👤 Driver Info
+
+Driver Details Screen
+
+Driver Photo
+
+Rating
+
+Vehicle Number
+
+Call button
+
+Rating & Review System
+
+Star rating after ride
+
+Comment option
+
+Store in database
+
+🚖 2. DRIVER APP FEATURES TO ADD
+📂 Document Upload System
+
+Driver must upload and admin must verify:
+
+Driving License
+
+RC (Vehicle Registration)
+
+Aadhaar Card
+
+Insurance
+
+PAN Card
+
+Features:
+✔ Upload photo/PDF
+✔ Admin approval/reject
+✔ Expiry alerts
+
+💰 Earnings Section
+
+Add earning dashboard:
+
+Daily earnings
+
+Weekly earnings
+
+Monthly earnings
+
+Commission deduction
+
+Withdrawal request
+
+🛠️ 3. ADMIN PANEL FEATURES
+👥 Driver Management
+
+Approve / Reject Drivers
+
+View documents
+
+Block/Unblock drivers
+
+📊 Ride & Business Control
+
+Live Ride Tracking
+
+Reports & Analytics
+
+Total rides
+
+Revenue
+
+Driver performance
+
+Wallet & Payment Control
+
+Commission Settings
+
+Surge Pricing Control
+
+🎟️ Marketing Tools
+
+Coupon Management
+
+Promo campaign creation
+
+📢 Support System
+
+Complaint Management
+
+Customer support tickets
+
+🎨 4. UI REQUIREMENTS
+
+White theme modern UI
+
+Smooth animations
+
+Fast loading
+
+Mobile-first design
+
+Clean dashboard cards
+
+High-quality icons & illustrations
+
+🔐 5. SECURITY & PERFORMANCE
+
+OTP login
+
+Secure API authentication
+
+Data encryption
+
+Scalable backend
+
+Cloud storage for documents
+
+Backup system
+
+🧠 6. TECH REQUIREMENTS
+
+Developer should:
+
+✔ Use modular coding
+✔ Do not break existing features
+✔ Add API documentation
+✔ Add testing before deployment
+
+📦 7. OPTIONAL FUTURE FEATURES
+
+AI driver assignment
+
+Auto call bot for ride confirmation
+
+WhatsApp ride alerts
+
+Referral system
+
+Subscription plans
+
+✅ FINAL INSTRUCTION
+
+“Analyze my existing app structure and safely integrate these features with proper UI, database tables, and API endpoints. Ensure smooth performance and scalable architecture.”

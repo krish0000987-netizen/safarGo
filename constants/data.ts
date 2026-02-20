@@ -49,9 +49,17 @@ export interface BookingData {
   vehicleType: "sedan" | "suv" | "luxury";
   passengers: number;
   fare: number;
+  originalFare?: number;
+  couponCode?: string;
+  couponDiscount?: number;
+  driverId?: string;
   driverName?: string;
   driverPhone?: string;
+  driverRating?: number;
+  driverVehicle?: string;
+  driverVehicleNumber?: string;
   pickupLocation: string;
+  hasReview?: boolean;
 }
 
 export interface UserData {
@@ -70,10 +78,15 @@ export interface DriverData extends UserData {
   vehicleNumber: string;
   rating: number;
   isAvailable: boolean;
+  isBlocked: boolean;
   kycStatus: "pending" | "submitted" | "approved" | "rejected";
   totalEarnings: number;
   todayEarnings: number;
+  weekEarnings: number;
+  monthEarnings: number;
   completedTrips: number;
+  commissionRate: number;
+  documents: DriverDocument[];
 }
 
 export const destinations: Destination[] = [
@@ -233,6 +246,61 @@ export const simulatedDriverLocations = [
   { id: "d5", name: "Sunil R.", vehicle: "Hyundai Creta", latitude: 26.8600, longitude: 80.9400, rating: 4.7 },
 ];
 
+export interface CouponData {
+  id: string;
+  code: string;
+  discountType: "flat" | "percentage";
+  discountValue: number;
+  minOrderAmount: number;
+  maxDiscount: number;
+  usageLimit: number;
+  usedCount: number;
+  expiryDate: string;
+  isActive: boolean;
+  description: string;
+}
+
+export interface ReviewData {
+  id: string;
+  bookingId: string;
+  userId: string;
+  driverId: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
+export interface DriverDocument {
+  type: "driving_license" | "rc" | "aadhaar" | "insurance" | "pan";
+  label: string;
+  status: "not_uploaded" | "uploaded" | "verified" | "rejected";
+  uploadDate?: string;
+  expiryDate?: string;
+  rejectionReason?: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: "customer" | "driver";
+  subject: string;
+  message: string;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  priority: "low" | "medium" | "high";
+  date: string;
+  response?: string;
+}
+
+export interface WithdrawalRequest {
+  id: string;
+  driverId: string;
+  amount: number;
+  status: "pending" | "approved" | "rejected" | "completed";
+  date: string;
+  bankDetails: string;
+}
+
 export const vehicleTypes = {
   sedan: { name: "Sedan", multiplier: 1, capacity: 4, icon: "car-outline" as const },
   suv: { name: "SUV", multiplier: 1.4, capacity: 6, icon: "car-sport-outline" as const },
@@ -251,8 +319,12 @@ export const sampleBookings: BookingData[] = [
     vehicleType: "suv",
     passengers: 4,
     fare: 6999,
+    driverId: "d1",
     driverName: "Rajesh Kumar",
     driverPhone: "+91 98765 43210",
+    driverRating: 4.8,
+    driverVehicle: "Toyota Innova Crysta",
+    driverVehicleNumber: "UP32 AB 1234",
     pickupLocation: "Hazratganj, Lucknow",
   },
   {
@@ -266,9 +338,14 @@ export const sampleBookings: BookingData[] = [
     vehicleType: "sedan",
     passengers: 2,
     fare: 2499,
+    driverId: "d2",
     driverName: "Amit Singh",
     driverPhone: "+91 98765 12345",
+    driverRating: 4.6,
+    driverVehicle: "Maruti Suzuki Ertiga",
+    driverVehicleNumber: "UP32 CD 5678",
     pickupLocation: "Gomti Nagar, Lucknow",
+    hasReview: true,
   },
   {
     id: "b3",
@@ -281,10 +358,23 @@ export const sampleBookings: BookingData[] = [
     vehicleType: "luxury",
     passengers: 2,
     fare: 12098,
+    driverId: "d3",
     driverName: "Vikram Patel",
     driverPhone: "+91 98765 67890",
+    driverRating: 4.9,
+    driverVehicle: "Mercedes-Benz V-Class",
+    driverVehicleNumber: "UP32 EF 9012",
     pickupLocation: "Aliganj, Lucknow",
+    hasReview: true,
   },
+];
+
+export const defaultDriverDocuments: DriverDocument[] = [
+  { type: "driving_license", label: "Driving License", status: "not_uploaded" },
+  { type: "rc", label: "Vehicle Registration (RC)", status: "not_uploaded" },
+  { type: "aadhaar", label: "Aadhaar Card", status: "not_uploaded" },
+  { type: "insurance", label: "Vehicle Insurance", status: "not_uploaded" },
+  { type: "pan", label: "PAN Card", status: "not_uploaded" },
 ];
 
 export const sampleDrivers: DriverData[] = [
@@ -301,10 +391,21 @@ export const sampleDrivers: DriverData[] = [
     vehicleNumber: "UP32 AB 1234",
     rating: 4.8,
     isAvailable: true,
+    isBlocked: false,
     kycStatus: "approved",
     totalEarnings: 485000,
     todayEarnings: 3200,
+    weekEarnings: 18500,
+    monthEarnings: 72000,
     completedTrips: 342,
+    commissionRate: 15,
+    documents: [
+      { type: "driving_license", label: "Driving License", status: "verified", uploadDate: "2024-03-15", expiryDate: "2028-03-15" },
+      { type: "rc", label: "Vehicle Registration (RC)", status: "verified", uploadDate: "2024-03-15", expiryDate: "2029-06-20" },
+      { type: "aadhaar", label: "Aadhaar Card", status: "verified", uploadDate: "2024-03-15" },
+      { type: "insurance", label: "Vehicle Insurance", status: "verified", uploadDate: "2024-03-15", expiryDate: "2027-01-10" },
+      { type: "pan", label: "PAN Card", status: "verified", uploadDate: "2024-03-15" },
+    ],
   },
   {
     id: "d2",
@@ -319,10 +420,21 @@ export const sampleDrivers: DriverData[] = [
     vehicleNumber: "UP32 CD 5678",
     rating: 4.6,
     isAvailable: false,
+    isBlocked: false,
     kycStatus: "approved",
     totalEarnings: 234000,
     todayEarnings: 0,
+    weekEarnings: 12400,
+    monthEarnings: 48000,
     completedTrips: 156,
+    commissionRate: 15,
+    documents: [
+      { type: "driving_license", label: "Driving License", status: "verified", uploadDate: "2024-08-20", expiryDate: "2027-08-20" },
+      { type: "rc", label: "Vehicle Registration (RC)", status: "verified", uploadDate: "2024-08-20", expiryDate: "2029-08-20" },
+      { type: "aadhaar", label: "Aadhaar Card", status: "verified", uploadDate: "2024-08-20" },
+      { type: "insurance", label: "Vehicle Insurance", status: "verified", uploadDate: "2024-08-20", expiryDate: "2026-08-20" },
+      { type: "pan", label: "PAN Card", status: "verified", uploadDate: "2024-08-20" },
+    ],
   },
   {
     id: "d3",
@@ -337,10 +449,21 @@ export const sampleDrivers: DriverData[] = [
     vehicleNumber: "UP32 EF 9012",
     rating: 4.9,
     isAvailable: true,
+    isBlocked: false,
     kycStatus: "approved",
     totalEarnings: 892000,
     todayEarnings: 5600,
+    weekEarnings: 28900,
+    monthEarnings: 115000,
     completedTrips: 521,
+    commissionRate: 12,
+    documents: [
+      { type: "driving_license", label: "Driving License", status: "verified", uploadDate: "2023-11-10", expiryDate: "2028-11-10" },
+      { type: "rc", label: "Vehicle Registration (RC)", status: "verified", uploadDate: "2023-11-10", expiryDate: "2028-11-10" },
+      { type: "aadhaar", label: "Aadhaar Card", status: "verified", uploadDate: "2023-11-10" },
+      { type: "insurance", label: "Vehicle Insurance", status: "verified", uploadDate: "2023-11-10", expiryDate: "2026-11-10" },
+      { type: "pan", label: "PAN Card", status: "verified", uploadDate: "2023-11-10" },
+    ],
   },
   {
     id: "d4",
@@ -355,9 +478,124 @@ export const sampleDrivers: DriverData[] = [
     vehicleNumber: "UP32 GH 3456",
     rating: 0,
     isAvailable: false,
+    isBlocked: false,
     kycStatus: "submitted",
     totalEarnings: 0,
     todayEarnings: 0,
+    weekEarnings: 0,
+    monthEarnings: 0,
     completedTrips: 0,
+    commissionRate: 15,
+    documents: [
+      { type: "driving_license", label: "Driving License", status: "uploaded", uploadDate: "2026-02-01", expiryDate: "2030-02-01" },
+      { type: "rc", label: "Vehicle Registration (RC)", status: "uploaded", uploadDate: "2026-02-01", expiryDate: "2031-02-01" },
+      { type: "aadhaar", label: "Aadhaar Card", status: "uploaded", uploadDate: "2026-02-01" },
+      { type: "insurance", label: "Vehicle Insurance", status: "uploaded", uploadDate: "2026-02-01", expiryDate: "2027-02-01" },
+      { type: "pan", label: "PAN Card", status: "not_uploaded" },
+    ],
   },
+];
+
+export const sampleCoupons: CouponData[] = [
+  {
+    id: "c1",
+    code: "FIRST50",
+    discountType: "percentage",
+    discountValue: 50,
+    minOrderAmount: 1000,
+    maxDiscount: 500,
+    usageLimit: 100,
+    usedCount: 45,
+    expiryDate: "2026-06-30",
+    isActive: true,
+    description: "50% off on your first ride (max \u20B9500)",
+  },
+  {
+    id: "c2",
+    code: "SAFAR200",
+    discountType: "flat",
+    discountValue: 200,
+    minOrderAmount: 2000,
+    maxDiscount: 200,
+    usageLimit: 500,
+    usedCount: 123,
+    expiryDate: "2026-04-30",
+    isActive: true,
+    description: "\u20B9200 flat off on rides above \u20B92,000",
+  },
+  {
+    id: "c3",
+    code: "LUXURY25",
+    discountType: "percentage",
+    discountValue: 25,
+    minOrderAmount: 5000,
+    maxDiscount: 2000,
+    usageLimit: 50,
+    usedCount: 12,
+    expiryDate: "2026-03-31",
+    isActive: true,
+    description: "25% off on luxury rides (max \u20B92,000)",
+  },
+  {
+    id: "c4",
+    code: "WELCOME100",
+    discountType: "flat",
+    discountValue: 100,
+    minOrderAmount: 500,
+    maxDiscount: 100,
+    usageLimit: 1000,
+    usedCount: 890,
+    expiryDate: "2025-12-31",
+    isActive: false,
+    description: "\u20B9100 off for new users (expired)",
+  },
+];
+
+export const sampleReviews: ReviewData[] = [
+  { id: "r1", bookingId: "b2", userId: "user1", driverId: "d2", rating: 5, comment: "Excellent driver, very comfortable ride to Ayodhya!", date: "2026-02-10" },
+  { id: "r2", bookingId: "b3", userId: "user1", driverId: "d3", rating: 5, comment: "Luxury experience! Mercedes V-Class was amazing for Agra trip.", date: "2026-01-15" },
+];
+
+export const sampleTickets: SupportTicket[] = [
+  {
+    id: "t1",
+    userId: "user1",
+    userName: "Arjun Sharma",
+    userRole: "customer",
+    subject: "Refund for cancelled ride",
+    message: "I cancelled my ride but haven't received the refund yet. Booking ID: b3",
+    status: "open",
+    priority: "high",
+    date: "2026-02-18",
+  },
+  {
+    id: "t2",
+    userId: "d2",
+    userName: "Amit Singh",
+    userRole: "driver",
+    subject: "Payment not received",
+    message: "My last 2 trip payments are still pending in my wallet.",
+    status: "in_progress",
+    priority: "medium",
+    date: "2026-02-17",
+    response: "We are looking into this issue. Payment will be credited within 24 hours.",
+  },
+  {
+    id: "t3",
+    userId: "user1",
+    userName: "Arjun Sharma",
+    userRole: "customer",
+    subject: "AC not working",
+    message: "The AC in the car was not working during my Varanasi trip.",
+    status: "resolved",
+    priority: "low",
+    date: "2026-02-15",
+    response: "We apologize for the inconvenience. A \u20B9200 coupon has been added to your account.",
+  },
+];
+
+export const sampleWithdrawals: WithdrawalRequest[] = [
+  { id: "w1", driverId: "d1", amount: 5000, status: "completed", date: "2026-02-18", bankDetails: "SBI ****1234" },
+  { id: "w2", driverId: "d1", amount: 3000, status: "pending", date: "2026-02-20", bankDetails: "SBI ****1234" },
+  { id: "w3", driverId: "d3", amount: 10000, status: "completed", date: "2026-02-16", bankDetails: "HDFC ****5678" },
 ];
