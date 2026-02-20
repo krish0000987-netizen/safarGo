@@ -59,18 +59,23 @@ export default function AuthScreen() {
 
     setLoading(true);
     try {
-      let success: boolean;
       if (mode === "login") {
-        success = await login(email, password, role);
+        const result = await login(email, password, role);
+        if (result) {
+          if (result === "admin") router.replace("/admin");
+          else if (result === "driver") router.replace("/driver");
+          else router.replace("/customer");
+        } else {
+          Alert.alert("Login Failed", "Invalid credentials. Try:\ncustomer@safargo.com\ndriver@safargo.com\nadmin@safargo.com\nwith any password.");
+        }
       } else {
-        success = await register(name, email, phone, password, role);
-      }
-
-      if (success) {
-        if (role === "customer") router.replace("/customer");
-        else router.replace("/driver");
-      } else {
-        Alert.alert("Login Failed", "Invalid credentials. Try:\ncustomer@safargo.com\ndriver@safargo.com\nadmin@safargo.com\nwith any password.");
+        const success = await register(name, email, phone, password, role);
+        if (success) {
+          if (role === "driver") router.replace("/driver");
+          else router.replace("/customer");
+        } else {
+          Alert.alert("Registration Failed", "Something went wrong.");
+        }
       }
     } catch (e) {
       Alert.alert("Error", "Something went wrong. Please try again.");

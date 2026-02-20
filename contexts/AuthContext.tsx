@@ -5,7 +5,7 @@ import { UserData, DriverData } from "@/constants/data";
 interface AuthContextValue {
   user: UserData | DriverData | null;
   isLoading: boolean;
-  login: (email: string, password: string, role: string) => Promise<boolean>;
+  login: (email: string, password: string, role: string) => Promise<string | false>;
   register: (name: string, email: string, phone: string, password: string, role: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<UserData>) => Promise<void>;
@@ -86,20 +86,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string, _password: string, _role: string): Promise<boolean> => {
+  const login = async (email: string, _password: string, _role: string): Promise<string | false> => {
     const normalizedEmail = email.toLowerCase().trim();
     const foundUser = defaultUsers[normalizedEmail];
     if (foundUser) {
       setUser(foundUser);
       await AsyncStorage.setItem("@safargo_user", JSON.stringify(foundUser));
-      return true;
+      return foundUser.role;
     }
     const stored = await AsyncStorage.getItem("@safargo_registered_" + normalizedEmail);
     if (stored) {
       const u = JSON.parse(stored);
       setUser(u);
       await AsyncStorage.setItem("@safargo_user", JSON.stringify(u));
-      return true;
+      return u.role;
     }
     return false;
   };

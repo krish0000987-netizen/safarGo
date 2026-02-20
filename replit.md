@@ -37,12 +37,49 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Layer
 
-- **Local storage**: AsyncStorage for user sessions, bookings, favorites, and theme preferences
-- **Seed data**: `constants/data.ts` contains destination info, sample bookings, sample drivers
+- **Local storage**: AsyncStorage for user sessions, bookings, favorites, coupons, reviews, tickets, and theme preferences
+- **Seed data**: `constants/data.ts` contains destination info, sample bookings, sample drivers, sample coupons, sample reviews, sample tickets, sample withdrawals
 - **Demo accounts**: customer@safargo.com, driver@safargo.com, admin@safargo.com (any password)
+- **Data types**: BookingData, UserData, DriverData, CouponData, ReviewData, DriverDocument, SupportTicket, WithdrawalRequest
+
+### Key Features
+
+#### Customer App
+- Browse 6 Indian destinations with details, highlights, and pricing
+- Book rides with vehicle type selection (sedan/SUV/luxury), date/time picker, pickup location
+- **Coupon/promo code system**: Apply coupons during booking with real-time validation (expiry check, usage limits, min order amount), automatic discount calculation (percentage/flat with max caps), visual feedback with original fare strikethrough
+- **Driver details on trip cards**: Avatar, rating, vehicle info, license plate displayed on booking cards
+- **Rating/review system**: 5-star rating modal for completed rides with optional comments, duplicate review prevention via hasReview flag
+- **Driver tracking**: Full-screen map modal with live driver position for confirmed/in_progress rides
+
+#### Driver App
+- **Dashboard**: Active ride requests with acceptance/rejection modal showing route preview, fare details, and passenger info; blocked account warning banner
+- **Earnings**: Period selection (today/week/month), gross/commission/net breakdown with configurable commission rates (5-30%), wallet balance with withdrawal request modal, transaction history
+- **5-document KYC upload**: Driving license, RC, Aadhaar, insurance, PAN with 4-state verification workflow (not_uploaded → uploaded → verified/rejected), upload/expiry dates, rejection reasons, progress bar
+- **Profile**: Vehicle info, KYC status, document management, reviews, dark mode toggle
+
+#### Admin Panel
+- **Dashboard**: Overview stats (total bookings, revenue, active drivers, commission, avg rating)
+- **Coupon management**: Create/edit/delete coupons, discount type selection (percentage/flat), usage tracking, expiry management, activate/deactivate toggles
+- **Support tickets**: Priority levels (low/medium/high), status tracking (open/in_progress/resolved), response functionality with automatic status resolution, role-based badges
+- **Commission settings**: Configurable platform commission rate (5-30%) with +/- controls, revenue/commission display
+- **Driver management**: Detailed driver view modal with all stats/documents/reviews, document verification/rejection actions (one-click approve), block/unblock functionality, KYC approval/rejection, comprehensive driver analytics
+- **Withdrawal management**: View pending withdrawal requests, approve/reject actions
 
 ### Build & Deploy
 
 - **Dev mode**: Two processes — `expo:dev` for the Expo dev server and `server:dev` for the Express backend
 - **Production**: `expo:static:build` runs a custom build script, then `server:build` bundles the server with esbuild
 - **Port**: The Express server runs on port 5000, Expo on port 8081
+
+## Recent Changes (Feb 2026)
+
+- Added complete coupon/promo code system with validation and discount calculation in booking flow
+- Implemented driver details display and rating/review system for completed rides
+- Built 5-document KYC upload system with 4-state verification workflow in driver profile
+- Enhanced earnings screen with period breakdowns, commission deductions, and withdrawal requests
+- Added ride acceptance/rejection modal with route preview in driver dashboard
+- Created admin coupon management with create/edit/activate/deactivate/delete functionality
+- Built admin support ticket system with priority levels and response functionality
+- Enhanced admin driver management with document verification, block/unblock, and detailed analytics
+- Added withdrawal management for admin to approve/reject driver withdrawal requests
