@@ -19,7 +19,7 @@ import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
-import { destinations, vehicleTypes } from "@/constants/data";
+import { destinations, vehicleTypes, sampleDrivers } from "@/constants/data";
 
 type VehicleType = "sedan" | "suv" | "luxury";
 
@@ -28,7 +28,7 @@ export default function CreateBooking() {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const { addBooking } = useData();
+  const { addBooking, applyCoupon } = useData();
 
   const destination = destinations.find((d) => d.id === destinationId);
 
@@ -38,6 +38,10 @@ export default function CreateBooking() {
   const [date, setDate] = useState("2026-03-01");
   const [time, setTime] = useState("06:00 AM");
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponMessage, setCouponMessage] = useState("");
 
   if (!destination) {
     return (
@@ -47,11 +51,38 @@ export default function CreateBooking() {
     );
   }
 
-  const fare = Math.round(destination.basePrice * vehicleTypes[vehicle].multiplier);
+  const baseFare = Math.round(destination.basePrice * vehicleTypes[vehicle].multiplier);
+  const fare = couponApplied ? baseFare - couponDiscount : baseFare;
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const result = applyCoupon(couponCode.trim(), baseFare);
+    setCouponMessage(result.message);
+    if (result.valid) {
+      setCouponApplied(true);
+      setCouponDiscount(result.discount);
+    } else {
+      setCouponApplied(false);
+      setCouponDiscount(0);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
+    setCouponApplied(false);
+    setCouponDiscount(0);
+    setCouponMessage("");
+  };
 
   const handleBook = async () => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setLoading(true);
+
+    const availableDrivers = sampleDrivers.filter((d) => d.isAvailable && !d.isBlocked && d.kycStatus === "approved");
+    const assignedDriver = availableDrivers.length > 0
+      ? availableDrivers[Math.floor(Math.random() * availableDrivers.length)]
+      : null;
 
     try {
       await addBooking({
@@ -64,13 +95,22 @@ export default function CreateBooking() {
         vehicleType: vehicle,
         passengers,
         fare,
-        driverName: "Auto Assigned",
-        driverPhone: "+91 98765 00000",
+        originalFare: couponApplied ? baseFare : undefined,
+        couponCode: couponApplied ? couponCode : undefined,
+        couponDiscount: couponApplied ? couponDiscount : undefined,
+        driverId: assignedDriver?.id,
+        driverName: assignedDriver?.name || "Auto Assigned",
+        driverPhone: assignedDriver?.phone || "+91 98765 00000",
+        driverRating: assignedDriver?.rating,
+        driverVehicle: assignedDriver?.vehicle,
+        driverVehicleNumber: assignedDriver?.vehicleNumber,
         pickupLocation: pickup,
       });
+
+      const discountText = couponApplied ? `\nDiscount: -\u20B9${couponDiscount.toLocaleString()}` : "";
       Alert.alert(
         "Booking Confirmed!",
-        `Your trip to ${destination.name} has been booked for ${date} at ${time}.\n\nFare: \u20B9${fare.toLocaleString()}`,
+        `Your trip to ${destination.name} has been booked for ${date} at ${time}.${discountText}\n\nFare: \u20B9${fare.toLocaleString()}${assignedDriver ? `\nDriver: ${assignedDriver.name}` : ""}`,
         [{ text: "Great!", onPress: () => router.dismissAll() }]
       );
     } catch {
@@ -170,6 +210,7 @@ export default function CreateBooking() {
                   onPress={() => {
                     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setVehicle(v);
+                    if (couponApplied) handleRemoveCoupon();
                   }}
                   style={[
                     styles.vehicleCard,
@@ -221,6 +262,49 @@ export default function CreateBooking() {
             </Pressable>
           </View>
         </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(350).duration(500)}>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Promo Code</Text>
+          <View style={[styles.couponRow, { backgroundColor: inputBg }]}>
+            <Ionicons name="pricetag-outline" size={18} color={colors.textSecondary} />
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={couponCode}
+              onChangeText={(t) => {
+                setCouponCode(t.toUpperCase());
+                if (couponApplied) { setCouponApplied(false); setCouponDiscount(0); setCouponMessage(""); }
+              }}
+              placeholder="Enter promo code"
+              placeholderTextColor={colors.textTertiary}
+              autoCapitalize="characters"
+              editable={!couponApplied}
+            />
+            {couponApplied ? (
+              <Pressable onPress={handleRemoveCoupon} style={styles.couponActionBtn}>
+                <Ionicons name="close-circle" size={22} color="#E74C3C" />
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={handleApplyCoupon}
+                style={[styles.applyBtn, { backgroundColor: Colors.gold + "20" }]}
+              >
+                <Text style={styles.applyBtnText}>Apply</Text>
+              </Pressable>
+            )}
+          </View>
+          {couponMessage !== "" && (
+            <View style={[styles.couponMsgRow, { backgroundColor: couponApplied ? "#2ECC7110" : "#E74C3C10" }]}>
+              <Ionicons
+                name={couponApplied ? "checkmark-circle" : "alert-circle"}
+                size={16}
+                color={couponApplied ? "#2ECC71" : "#E74C3C"}
+              />
+              <Text style={[styles.couponMsgText, { color: couponApplied ? "#2ECC71" : "#E74C3C" }]}>
+                {couponMessage}
+              </Text>
+            </View>
+          )}
+        </Animated.View>
       </ScrollView>
 
       <View
@@ -235,7 +319,12 @@ export default function CreateBooking() {
       >
         <View>
           <Text style={[styles.fareLabel, { color: colors.textSecondary }]}>Total Fare ({destination.distanceKm > 0 ? `${destination.distanceKm} km` : "Local"})</Text>
-          <Text style={styles.fareValue}>{"\u20B9"}{fare.toLocaleString()}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text style={styles.fareValue}>{"\u20B9"}{fare.toLocaleString()}</Text>
+            {couponApplied && (
+              <Text style={styles.originalFare}>{"\u20B9"}{baseFare.toLocaleString()}</Text>
+            )}
+          </View>
         </View>
         <Pressable
           onPress={handleBook}
@@ -321,6 +410,31 @@ const styles = StyleSheet.create({
   },
   passengerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   passengerCount: { fontFamily: "Poppins_700Bold", fontSize: 28, minWidth: 40, textAlign: "center" },
+  couponRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  couponActionBtn: { padding: 4 },
+  applyBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  applyBtnText: { fontFamily: "Poppins_600SemiBold", fontSize: 13, color: Colors.gold },
+  couponMsgRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  couponMsgText: { fontFamily: "Poppins_500Medium", fontSize: 12 },
   bottomBar: {
     position: "absolute",
     bottom: 0,
@@ -335,6 +449,7 @@ const styles = StyleSheet.create({
   },
   fareLabel: { fontFamily: "Poppins_400Regular", fontSize: 12 },
   fareValue: { fontFamily: "Poppins_700Bold", fontSize: 24, color: Colors.gold },
+  originalFare: { fontFamily: "Poppins_400Regular", fontSize: 14, color: "#9E9E9E", textDecorationLine: "line-through" },
   confirmBtn: { borderRadius: 14, overflow: "hidden" },
   confirmGradient: {
     flexDirection: "row",
