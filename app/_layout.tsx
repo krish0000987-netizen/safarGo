@@ -36,6 +36,10 @@ function RootLayoutNav() {
         name="booking/create"
         options={{ presentation: "modal", headerShown: false }}
       />
+      <Stack.Screen
+        name="terms"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

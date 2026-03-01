@@ -297,6 +297,13 @@ export default function AuthScreen() {
               </Text>
             </Pressable>
           </View>
+
+          <Pressable onPress={() => router.push("/terms")} style={{ marginTop: 16, alignItems: "center" }}>
+            <Text style={[styles.switchText, { color: secondaryText, fontSize: 12 }]}>
+              By continuing, you agree to our{" "}
+              <Text style={{ color: Colors.gold, fontFamily: "Poppins_500Medium" }}>Terms & Conditions</Text>
+            </Text>
+          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

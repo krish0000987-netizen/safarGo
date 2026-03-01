@@ -218,6 +218,20 @@ export default function DriverProfile() {
                 thumbColor={isDark ? Colors.gold : "#FFF"}
               />
             </View>
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <Pressable
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/terms");
+              }}
+              style={({ pressed }) => [styles.settingRow, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <View style={styles.settingLeft}>
+                <Ionicons name="document-text-outline" size={20} color={Colors.gold} />
+                <Text style={[styles.settingLabel, { color: colors.text }]}>Terms & Conditions</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+            </Pressable>
           </View>
         </Animated.View>
 

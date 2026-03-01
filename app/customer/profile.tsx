@@ -48,6 +48,7 @@ export default function ProfileScreen() {
     { icon: "notifications-outline", label: "Notifications", iconColor: "#9C27B0", iconBg: "#F3E5F5" },
     { icon: "shield-checkmark-outline", label: "Privacy", iconColor: "#00897B", iconBg: "#E0F2F1" },
     { icon: "help-circle-outline", label: "Help & Support", iconColor: "#FF5722", iconBg: "#FBE9E7" },
+    { icon: "document-text-outline", label: "Terms & Conditions", iconColor: Colors.gold, iconBg: Colors.gold + "15", route: "/terms" },
     { icon: "information-circle-outline", label: "About", iconColor: "#607D8B", iconBg: "#ECEFF1" },
   ];
 
@@ -109,6 +110,7 @@ export default function ProfileScreen() {
             key={i}
             onPress={() => {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if ((item as any).route) router.push((item as any).route);
             }}
             style={({ pressed }) => [
               styles.menuRow,
