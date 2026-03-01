@@ -40,6 +40,10 @@ function RootLayoutNav() {
         name="terms"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="driver-agreement"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

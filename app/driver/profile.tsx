@@ -232,6 +232,20 @@ export default function DriverProfile() {
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
             </Pressable>
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <Pressable
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/driver-agreement");
+              }}
+              style={({ pressed }) => [styles.settingRow, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <View style={styles.settingLeft}>
+                <Ionicons name="car-sport-outline" size={20} color={Colors.gold} />
+                <Text style={[styles.settingLabel, { color: colors.text }]}>Driver Agreement</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+            </Pressable>
           </View>
         </Animated.View>
 
