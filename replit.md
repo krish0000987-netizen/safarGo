@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: Expo SDK 54 with React Native 0.81, new architecture enabled, React 19
 - **Routing**: expo-router with file-based routing. The `app/` directory contains route groups organized by user role:
   - `app/index.tsx` — Welcome/splash screen with auto-redirect based on authenticated user's role
-  - `app/auth.tsx` — Combined login/registration screen with role selection and quick demo login
+  - `app/auth.tsx` — Combined login/registration screen with role selection, quick demo login, and T&C acceptance checkbox on sign-up (shows Driver Agreement link when driver role selected)
   - `app/customer/` — Customer flow with tab navigation (Home, Bookings, Profile), plus destination detail and booking screens
   - `app/driver/` — Driver flow with tab navigation (Dashboard, Earnings, Profile)
   - `app/admin/` — Admin dashboard with tab navigation (Dashboard, Drivers, Manage)
@@ -36,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express 5, TypeScript. Dev server runs with `tsx`, production build uses `esbuild`
 - **Entry point**: `server/index.ts` — sets up CORS, JSON parsing, and serves landing page
 - **Routes**: `server/routes.ts` — placeholder for API endpoints (app uses AsyncStorage for data)
+- **Pay per KM page**: `server/templates/pricing.html` — served at `/pricing`, shows per-km rates and vehicle-wise fares for all 6 destinations
 
 ### Data Layer
 

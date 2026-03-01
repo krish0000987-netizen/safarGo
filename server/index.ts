@@ -170,6 +170,14 @@ function configureExpoAndLanding(app: express.Application) {
   const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
   const appName = getAppName();
 
+  const pricingPath = path.resolve(process.cwd(), "server", "templates", "pricing.html");
+  const pricingTemplate = fs.readFileSync(pricingPath, "utf-8");
+
+  app.get("/pricing", (_req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.status(200).send(pricingTemplate);
+  });
+
   log("Serving static Expo files with dynamic manifest routing");
 
   app.use((req: Request, res: Response, next: NextFunction) => {

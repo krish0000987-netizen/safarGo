@@ -37,6 +37,7 @@ export default function AuthScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
@@ -53,6 +54,10 @@ export default function AuthScreen() {
     } else {
       if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
         Alert.alert("Missing Fields", "Please fill in all fields.");
+        return;
+      }
+      if (!acceptedTerms) {
+        Alert.alert("Terms Required", "Please accept the Terms & Conditions to create an account.");
         return;
       }
     }
@@ -263,6 +268,40 @@ export default function AuthScreen() {
             </View>
           </View>
 
+          {mode === "register" && (
+            <Pressable
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setAcceptedTerms(!acceptedTerms);
+              }}
+              style={styles.termsCheckRow}
+            >
+              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked, { borderColor: acceptedTerms ? Colors.gold : secondaryText }]}>
+                {acceptedTerms && <Ionicons name="checkmark" size={14} color="#FFF" />}
+              </View>
+              <Text style={[styles.termsCheckText, { color: secondaryText }]}>
+                I agree to the{" "}
+                <Text
+                  style={{ color: Colors.gold, fontFamily: "Poppins_500Medium" }}
+                  onPress={(e) => { e.stopPropagation(); router.push("/terms"); }}
+                >
+                  Terms & Conditions
+                </Text>
+                {role === "driver" && (
+                  <>
+                    {" "}and{" "}
+                    <Text
+                      style={{ color: Colors.gold, fontFamily: "Poppins_500Medium" }}
+                      onPress={(e) => { e.stopPropagation(); router.push("/driver-agreement"); }}
+                    >
+                      Driver Agreement
+                    </Text>
+                  </>
+                )}
+              </Text>
+            </Pressable>
+          )}
+
           <Pressable
             onPress={handleAuth}
             disabled={loading}
@@ -373,6 +412,32 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     fontSize: 15,
     padding: 0,
+  },
+  termsCheckRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.gold,
+  },
+  termsCheckText: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 13,
+    flex: 1,
+    lineHeight: 20,
   },
   authBtn: { borderRadius: 16, overflow: "hidden", marginTop: 8 },
   authBtnGradient: {
