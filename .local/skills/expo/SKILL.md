@@ -217,6 +217,28 @@ Games and absolute positioning:
 - Apply insets to positioning calculations in game physics
 - Avoid using SafeAreaView in game screens - factor insets into game loop instead
 
+## Font Loading and SplashScreen
+
+The scaffold does not include a custom font — you must install one (e.g., `@expo-google-fonts/inter`) and wire it into the root `_layout.tsx`. The scaffold has `SplashScreen.preventAutoHideAsync()` and a basic `hideAsync()` call — replace that useEffect with the font-gated pattern below:
+
+```typescript
+const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_600SemiBold });
+
+useEffect(() => {
+  if (fontsLoaded || fontError) {
+    SplashScreen.hideAsync();
+  }
+}, [fontsLoaded, fontError]);
+
+if (!fontsLoaded && !fontError) return null;
+```
+
+Rules:
+
+- Handle `fontError` alongside `fontsLoaded` — if font loading fails, the app should still render rather than showing a white screen forever
+- Tie `SplashScreen.hideAsync()` to `[fontsLoaded, fontError]` — do not call it unconditionally in `useEffect([], [])`
+- The `if (!fontsLoaded && !fontError) return null` must come after the `useEffect` hook, not before it (hooks cannot be called conditionally)
+
 ## Library Compatibility
 
 - ONLY use libraries from the Expo Go compatible list
@@ -286,7 +308,7 @@ Do not use Stripe unless the user explicitly requests it.
 - NEVER edit package.json directly. Use the packager_install_tool to install packages.
 - NEVER change bundle identifiers after initial setup unless user explicitly requests it.
 - NEVER downgrade the version of React Native or Expo that is declared in package.json.
-- NEVER create app.config.ts or app.config.js. The project MUST use a static app.json for Expo configuration. Dynamic config files (app.config.ts/js) break the Expo Launch build process. If you need to modify Expo settings, edit app.json directly.
+- NEVER create or replace app.config.ts or app.config.js. If the project already has an app.config.js (e.g., from the scaffold for base-path support), do not delete or overwrite it. For Expo settings, edit app.json directly. Creating a new dynamic config file breaks the Expo Launch build process and can break base-path routing.
 
 ## References
 
