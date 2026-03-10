@@ -33,7 +33,7 @@ const sections = [
   },
   {
     title: "5. Earnings & Payments",
-    body: "Drivers will receive payments after company commission deduction. Payments will be transferred weekly or as per app policy.",
+    body: "Drivers will receive payments after company commission deduction. Safar Go charges a fixed commission of 15% on every completed ride. This commission is automatically deducted from the ride fare before the remaining amount is credited to the driver's wallet.\n\nFor example, if the ride fare is ₹1,000, Safar Go retains ₹150 (15%) and the driver receives ₹850.\n\nPayments will be transferred weekly or as per app policy.",
   },
   {
     title: "6. Cancellation Rules",

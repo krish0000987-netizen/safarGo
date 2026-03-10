@@ -19,7 +19,7 @@ import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
-import { DriverData, BookingData } from "@/constants/data";
+import { DriverData, BookingData, vehicleTypes } from "@/constants/data";
 
 function RideRequestModal({
   visible, onClose, booking, onAccept, onReject,
@@ -65,7 +65,7 @@ function RideRequestModal({
             </View>
             <View style={reqStyles.detailItem}>
               <Ionicons name="car-outline" size={18} color={Colors.gold} />
-              <Text style={[reqStyles.detailValue, { color: colors.text }]}>{booking.vehicleType}</Text>
+              <Text style={[reqStyles.detailValue, { color: colors.text }]}>{vehicleTypes[booking.vehicleType]?.name || booking.vehicleType}</Text>
               <Text style={[reqStyles.detailLabel, { color: colors.textSecondary }]}>Vehicle</Text>
             </View>
           </View>

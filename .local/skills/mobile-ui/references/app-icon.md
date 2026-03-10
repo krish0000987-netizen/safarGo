@@ -4,7 +4,7 @@ Use these guidelines when generating app icons, splash screens, or other image a
 
 ## Image Generation Rules
 
-When using `generate_image_tool` for any image asset:
+When using the `media-generation` skill for any image asset:
 
 1. **Describe colors using natural language only** (e.g., "vibrant purple", "soft coral pink", "bright sky blue") - do NOT use hex codes, RGB values, or any number-based color specifications in the prompt
 2. **Never include text in generated images** - the generated image must never contain visible text, letters, numbers, words, labels, or any alphanumeric characters

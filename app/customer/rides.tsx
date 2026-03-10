@@ -20,7 +20,7 @@ import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
-import { BookingData, destinations, LUCKNOW_CENTER } from "@/constants/data";
+import { BookingData, destinations, LUCKNOW_CENTER, vehicleTypes } from "@/constants/data";
 import { useEffect, useRef } from "react";
 
 function DriverTrackingModal({
@@ -79,7 +79,7 @@ function DriverTrackingModal({
               <Text style={[trackStyles.driverName, { color: colors.text }]}>{booking.driverName || "Assigned Driver"}</Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <Text style={[trackStyles.driverVehicle, { color: colors.textSecondary }]}>
-                  {booking.driverVehicle || booking.vehicleType}
+                  {booking.driverVehicle || vehicleTypes[booking.vehicleType]?.name || booking.vehicleType}
                 </Text>
                 {booking.driverRating ? (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
@@ -249,7 +249,7 @@ function TripCard({
       <View style={[styles.tripFooter, { borderTopColor: colors.border }]}>
         <View style={styles.vehicleInfo}>
           <Ionicons name="car-outline" size={16} color={colors.textSecondary} />
-          <Text style={[styles.vehicleText, { color: colors.textSecondary }]}>{booking.vehicleType}</Text>
+          <Text style={[styles.vehicleText, { color: colors.textSecondary }]}>{vehicleTypes[booking.vehicleType]?.name || booking.vehicleType}</Text>
         </View>
         <View style={{ alignItems: "flex-end" }}>
           <Text style={styles.fareText}>{"\u20B9"}{booking.fare.toLocaleString()}</Text>

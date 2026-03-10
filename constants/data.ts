@@ -46,7 +46,7 @@ export interface BookingData {
   date: string;
   time: string;
   status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
-  vehicleType: "sedan" | "suv" | "luxury";
+  vehicleType: "sedan" | "suv";
   passengers: number;
   fare: number;
   originalFare?: number;
@@ -100,8 +100,8 @@ export const destinations: Destination[] = [
     distance: "134 km",
     distanceKm: 134,
     duration: "2h 30m",
-    basePrice: 2499,
-    pricePerKm: 18.6,
+    basePrice: 1608,
+    pricePerKm: 12,
     rating: 4.8,
     reviewCount: 1247,
     highlights: [
@@ -124,8 +124,8 @@ export const destinations: Destination[] = [
     distance: "320 km",
     distanceKm: 320,
     duration: "5h 15m",
-    basePrice: 4999,
-    pricePerKm: 15.6,
+    basePrice: 3840,
+    pricePerKm: 12,
     rating: 4.9,
     reviewCount: 3456,
     highlights: [
@@ -148,8 +148,8 @@ export const destinations: Destination[] = [
     distance: "0 km",
     distanceKm: 0,
     duration: "Local",
-    basePrice: 999,
-    pricePerKm: 20.0,
+    basePrice: 0,
+    pricePerKm: 15,
     rating: 4.7,
     reviewCount: 2189,
     highlights: [
@@ -172,8 +172,8 @@ export const destinations: Destination[] = [
     distance: "335 km",
     distanceKm: 335,
     duration: "5h 30m",
-    basePrice: 5499,
-    pricePerKm: 16.4,
+    basePrice: 4020,
+    pricePerKm: 12,
     rating: 4.9,
     reviewCount: 5672,
     highlights: [
@@ -196,8 +196,8 @@ export const destinations: Destination[] = [
     distance: "280 km",
     distanceKm: 280,
     duration: "4h 45m",
-    basePrice: 4299,
-    pricePerKm: 15.4,
+    basePrice: 3360,
+    pricePerKm: 12,
     rating: 4.6,
     reviewCount: 1834,
     highlights: [
@@ -220,8 +220,8 @@ export const destinations: Destination[] = [
     distance: "198 km",
     distanceKm: 198,
     duration: "3h 30m",
-    basePrice: 3499,
-    pricePerKm: 17.7,
+    basePrice: 2376,
+    pricePerKm: 12,
     rating: 4.5,
     reviewCount: 1456,
     highlights: [
@@ -302,10 +302,23 @@ export interface WithdrawalRequest {
 }
 
 export const vehicleTypes = {
-  sedan: { name: "Sedan", multiplier: 1, capacity: 4, icon: "car-outline" as const },
-  suv: { name: "SUV", multiplier: 1.4, capacity: 6, icon: "car-sport-outline" as const },
-  luxury: { name: "Luxury", multiplier: 2.2, capacity: 4, icon: "diamond-outline" as const },
+  sedan: { name: "5 Seater", seats: 5, capacity: 5, icon: "car-outline" as const },
+  suv: { name: "7 Seater", seats: 7, capacity: 7, icon: "car-sport-outline" as const },
 };
+
+export function calculateFare(distanceKm: number, vehicleKey: "sedan" | "suv"): number {
+  const seats = vehicleTypes[vehicleKey].seats;
+  let ratePerKm: number;
+  if (distanceKm < 10) {
+    ratePerKm = 15;
+  } else {
+    ratePerKm = 12;
+  }
+  if (seats === 7) {
+    ratePerKm += 1;
+  }
+  return Math.round(distanceKm * ratePerKm);
+}
 
 export const sampleBookings: BookingData[] = [
   {
@@ -355,7 +368,7 @@ export const sampleBookings: BookingData[] = [
     date: "2026-01-15",
     time: "05:30 AM",
     status: "completed",
-    vehicleType: "luxury",
+    vehicleType: "suv",
     passengers: 2,
     fare: 12098,
     driverId: "d3",
@@ -456,7 +469,7 @@ export const sampleDrivers: DriverData[] = [
     weekEarnings: 28900,
     monthEarnings: 115000,
     completedTrips: 521,
-    commissionRate: 12,
+    commissionRate: 15,
     documents: [
       { type: "driving_license", label: "Driving License", status: "verified", uploadDate: "2023-11-10", expiryDate: "2028-11-10" },
       { type: "rc", label: "Vehicle Registration (RC)", status: "verified", uploadDate: "2023-11-10", expiryDate: "2028-11-10" },
@@ -534,7 +547,7 @@ export const sampleCoupons: CouponData[] = [
     usedCount: 12,
     expiryDate: "2026-03-31",
     isActive: true,
-    description: "25% off on luxury rides (max \u20B92,000)",
+    description: "25% off on 7 seater rides (max ₹2,000)",
   },
   {
     id: "c4",

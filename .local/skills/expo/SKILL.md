@@ -73,7 +73,6 @@ You can import using `@/` to avoid relative paths (e.g., `import { Button } from
 Use react-native's `StyleSheet` for styling.
 
 ## Networking
-
 - Use `@/lib/query-client` for all data fetching.
   - Queries should not define their own queryFn — the default fetcher in `@/lib/query-client` is already configured. This only applies when the app's QueryClient is imported from `@/lib/query-client`; if the project still uses a bare `new QueryClient()`, migrate it first.
   - Mutations should use `apiRequest` from `@/lib/query-client` and invalidate cache by queryKey after.
@@ -87,55 +86,55 @@ Use react-native's `StyleSheet` for styling.
 Generate a custom app icon for the app. Read the mobile-ui skill's app-icon.md reference for guidelines.
 
 ## Workflow
-
 - The Expo App runs on port 8081. All web_application_feedback should go through port 8081 as that is where the user's app runs on
 - The Express backend runs on port 5000. It serves APIs for the app and a static landing page in server/templates/landing-page.html. Do NOT use port 5000 for web_application_feedback as it only serves the API and a landing page.
 - There are two workflows for this stack:
   - `Start Backend`: Restarts (or starts) the Express server. Use `await restartWorkflow({ workflowName: "Start Backend" })` after making any server/backend changes. It is important that you do not restart this workflow if you have only made frontend changes. Restarting this workflow takes time and calling it unnecessarily results in a poor user experience.
   - `Start Frontend`: Restarts (or starts) the Expo dev server. Since the Expo dev server has Hot Module Reloading, it will automatically refresh the app after most code changes. It is important that you do not restart this workflow unless you have updated dependencies or fixed an error. Restarting this workflow takes time and calling it unnecessarily results in a poor user experience.
+- After presenting the artifact, call `suggestDeploy()` so the user knows their app is ready to publish.
 
 ## React Native Pitfalls
 
 Avoid these common mistakes:
 
-1. UUID Generation:
+- UUID Generation:
    - Do not use the 'uuid' package — it requires crypto.getRandomValues() which crashes on iOS/Android
    - Use instead: `Date.now().toString() + Math.random().toString(36).substr(2, 9)`
    - Or use expo-crypto: `import * as Crypto from 'expo-crypto'; Crypto.randomUUID()` — pin to version 15.0.x (expo-crypto v55+ crashes in Expo Go)
 
-2. Import Verification:
+- Import Verification:
    - Check existing template files for correct import paths before using them
    - useBottomTabBarHeight is from '@react-navigation/bottom-tabs', not 'expo-router'
    - When unsure, read the actual files to verify exports exist
 
-3. Scrolling Containers — assess whether scrolling is needed:
+- Scrolling Containers — assess whether scrolling is needed:
    - Not everything needs to be scrollable. Fixed layouts (timers, dashboards, single-screen UIs) should use View, not ScrollView
    - FlatList: Add scrollEnabled={data.length > 0} to prevent empty bounce
    - Avoid contentInsetAdjustmentBehavior="automatic" with transparent/large-title headers — it causes over-scrolling
    - ScrollView is for content that exceeds screen height. If content fits, use View
 
-4. useEffect Anti-Patterns:
+- useEffect Anti-Patterns:
    - Do not sync props to state with useEffect (causes infinite loops)
    - BAD: `useEffect(() => setState(prop), [prop])` then `useEffect(() => onChange(state), [state])`
    - GOOD: Derive values directly from props: `const hours = Math.floor(value / 3600)`
    - Only call onChange on explicit user actions (onPress, onChangeText), not in useEffect
 
-5. Mobile Typography:
+- Mobile Typography:
    - Maximum font size for display/hero text (clocks, timers, large numbers): 48-64pt (not 96pt)
    - Body text: 14-16pt, Headers: 20-28pt
    - Always test that text fits on a 375pt wide screen (iPhone SE)
 
-6. Empty State Design:
+- Empty State Design:
    - Use simple text-based empty states, not placeholder images
    - An icon + descriptive text is sufficient
 
-7. Expo Router Header Configuration:
+- Expo Router Header Configuration:
    - Do not set headerShown dynamically inside screen components — it causes remounts on every re-render
    - BAD: Setting options dynamically inside screen components
    - GOOD: Configure all header options in _layout.tsx where screens are registered
    - Individual screens should only set dynamic content (headerLeft/headerRight buttons), not headerShown
 
-8. Safe Area / Top Padding:
+- Safe Area / Top Padding:
    - Do not use hardcoded top padding (24px, 40px, etc.) — it will be wrong on different devices
    - Use useSafeAreaInsets() from react-native-safe-area-context
    - Example: Use useSafeAreaInsets() hook and apply insets.top to paddingTop
@@ -147,11 +146,11 @@ Avoid these common mistakes:
      - GOOD: paddingTop: insets.top + 70 (where 70 = header's internal height)
      - The header height varies by device because insets vary (47px on older iPhones, 59px+ on Dynamic Island)
 
-9. Streaming API Responses (OpenAI, etc.):
+- Streaming API Responses (OpenAI, etc.):
    - For streaming, read the mobile-ui skill's expo-fetch.md reference
    - Use `import { fetch } from 'expo/fetch'` which supports getReader() on all platforms
 
-10. Keyboard Handling:
+- Keyboard Handling:
     - For detailed keyboard handling patterns (forms, chat, FlatList with inputs), read the mobile-ui skill's keyboard.md reference
     - Use `react-native-keyboard-controller` for all keyboard handling — it provides better control than React Native's built-in KeyboardAvoidingView and works consistently across iOS and Android
     - Do not use InputAccessoryView — it doesn't render properly in Expo Go
@@ -160,11 +159,11 @@ Avoid these common mistakes:
     - keyboardVerticalOffset: `0` for transparent/no header, `headerHeight` for opaque header
     - Use useSafeAreaInsets() for bottom padding on the input container to avoid home indicator overlap
     - Do not nest KeyboardAvoidingViews — only one should wrap your content
-    - For chat UIs: Use inverted FlatList (see point #11) — no additional scroll logic needed
+    - For chat UIs: Use inverted FlatList (see the chat apps guidance below) — no additional scroll logic needed
       - Do not try to implement auto-scroll with scrollToEnd() — it has timing bugs
       - Inverted FlatList handles this automatically — newest message always visible
 
-11. Chat Apps — state and FlatList patterns:
+- Chat Apps — state and FlatList patterns:
     - For chat app implementation patterns (stale closures, inverted FlatList, streaming), read the mobile-ui skill's expo-fetch.md reference
     - Key rules: Use inverted FlatList (not scrollToEnd), capture state before async operations, use ListHeaderComponent for typing indicator
     - FlatList Boolean Props — type coercion:
@@ -177,21 +176,21 @@ Avoid these common mistakes:
       - BAD: `scrollEnabled={data || someString}`
       - GOOD: `scrollEnabled={!!data || !!someString}`
 
-12. RevenueCat compatibility:
+- RevenueCat compatibility:
     - RevenueCat works in Expo Go and does not require a native build. In Expo Go, the SDK automatically runs in Preview API Mode, replacing native calls with JavaScript mocks so your app loads without errors.
     - RevenueCat works on the web out of the box without any additional configuration.
 
-13. Custom ErrorBoundary component:
+- Custom ErrorBoundary component:
     - Use reloadAppAsync function from expo in tandem with the ErrorBoundary component to restart the app when the app crashes. `import { reloadAppAsync } from 'expo'`. Do not use reloadAsync from "expo-updates" for this purpose.
     - The ErrorBoundary is a minimal class component (required by React's error boundary API) with a functional ErrorFallback component for the UI. The consuming component should remain functional.
     - Do not add local state to the ErrorFallback component because it only renders if the app crashes. It should be used as is, unless the user requests it. (Note: dev-mode-only state guarded by `__DEV__` is acceptable for debugging features.)
     - The ErrorFallback component uses useColorScheme and useSafeAreaInsets for proper theming and positioning. The ErrorBoundary wrapper uses React's class component error boundary API (getDerivedStateFromError, componentDidCatch).
 
-14. react-native-maps:
+- react-native-maps:
     - Pin version to exactly 1.18.0 in package.json (e.g., `"react-native-maps": "1.18.0"`) — this is the only version compatible with Expo Go currently. Other versions will cause crashes or compatibility issues.
     - Do not add react-native-maps to the plugins array in app.json — it will crash the app.
 
-15. Over use of text:
+- Over use of text:
     - Mobile apps should be designed for touch input, not text input.
     - Most buttons should not have text. They should have icons.
     - If you have to use text, use it sparingly and only for very important information.
@@ -219,22 +218,13 @@ Games and absolute positioning:
 
 ## Font Loading and SplashScreen
 
-The scaffold does not include a custom font — you must install one (e.g., `@expo-google-fonts/inter`) and wire it into the root `_layout.tsx`. The scaffold has `SplashScreen.preventAutoHideAsync()` and a basic `hideAsync()` call — replace that useEffect with the font-gated pattern below:
+The scaffold ships with `@expo-google-fonts/inter` pre-installed and already loaded in `_layout.tsx` with the correct `useFonts` + `SplashScreen` font-gating pattern. Available weights: `Inter_400Regular`, `Inter_500Medium`, `Inter_600SemiBold`, `Inter_700Bold`.
 
-```typescript
-const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_600SemiBold });
-
-useEffect(() => {
-  if (fontsLoaded || fontError) {
-    SplashScreen.hideAsync();
-  }
-}, [fontsLoaded, fontError]);
-
-if (!fontsLoaded && !fontError) return null;
-```
+If the user wants a different font, swap the import and `useFonts` call — keep the same font-gating pattern.
 
 Rules:
 
+- Do NOT remove the font-gating pattern from `_layout.tsx`
 - Handle `fontError` alongside `fontsLoaded` — if font loading fails, the app should still render rather than showing a white screen forever
 - Tie `SplashScreen.hideAsync()` to `[fontsLoaded, fontError]` — do not call it unconditionally in `useEffect([], [])`
 - The `if (!fontsLoaded && !fontError) return null` must come after the `useEffect` hook, not before it (hooks cannot be called conditionally)
@@ -300,15 +290,13 @@ Do not use Stripe unless the user explicitly requests it.
 ## Replit Environment
 
 - User can scan QR code from Replit's URL bar menu to test on their physical device via Expo Go
-- The dev server requires specific env vars for Replit's proxy: EXPO_PACKAGER_PROXY_URL and REACT_NATIVE_PACKAGER_HOSTNAME
 - Hot module reloading (HMR) is enabled - no need to restart the dev server for code changes
 
 ## Forbidden Changes
-
-- NEVER edit package.json directly. Use the packager_install_tool to install packages.
+- NEVER edit package.json directly. See package management skill for instructions on installing packages.
 - NEVER change bundle identifiers after initial setup unless user explicitly requests it.
 - NEVER downgrade the version of React Native or Expo that is declared in package.json.
-- NEVER create or replace app.config.ts or app.config.js. If the project already has an app.config.js (e.g., from the scaffold for base-path support), do not delete or overwrite it. For Expo settings, edit app.json directly. Creating a new dynamic config file breaks the Expo Launch build process and can break base-path routing.
+- NEVER run `npx expo start` or `npx expo` directly in a shell. Use the `restart_workflow` tool instead — running expo directly will miss environment variables (like `PORT`) injected into the workflow.
 
 ## References
 
@@ -320,4 +308,3 @@ Before writing code, identify whether any reference below applies to the task. I
 - mobile-ui skill's `references/keyboard.md` - Use this reference when implementing any keyboard handling — forms with multiple inputs, chat/messaging UIs, FlatList with inputs, or keyboard utilities (dismiss, detect visibility).
 - mobile-ui skill's `references/sheets.md` - Use this reference when implementing modals, sheets, formSheet presentations, auth flows (login/register), wizards, or overlay UI.
 - mobile-ui skill's `references/tabs.md` - Use this reference when implementing tab bars — covers NativeTabs with liquid glass support (SDK 54+) and classic Tabs fallback with detailed code examples.
-- Consult the `upgrading-expo` skill when the user asks about upgrading the Expo SDK, resolving peer dependency conflicts, or migrating to a newer SDK version.

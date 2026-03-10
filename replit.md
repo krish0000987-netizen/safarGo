@@ -29,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **Maps**: `react-native-maps@1.18.0` (pinned for Expo Go) on native, OpenStreetMap iframe on web. Platform-specific files: `components/MapWrapper.tsx` (native) and `components/MapWrapper.web.tsx` (web fallback). Uses `expo-location` for user location. Simulated driver positions in `constants/data.ts`.
 - **Driver tracking**: My Rides screen has "Track Driver" button on confirmed/in_progress bookings, opens full-screen map modal with live driver position, route polyline, and bottom sheet with driver info
 - **Terms & Conditions**: `app/terms.tsx` — scrollable T&C page with 17 sections (SAFAR GO Mobility Services Pvt. Ltd., last updated 1 March 2026). Accessible from auth screen link, customer profile, and driver profile settings
-- **Driver Agreement**: `app/driver-agreement.tsx` — scrollable Driver Partner Agreement page with 13 sections covering contractor status, eligibility, vehicle requirements, earnings, cancellation rules, safety, liability, and termination. Accessible from driver profile settings
+- **Driver Agreement**: `app/driver-agreement.tsx` — scrollable Driver Partner Agreement page with 13 sections covering contractor status, eligibility, vehicle requirements, earnings (with explicit 15% commission per ride to Safar Go), cancellation rules, safety, liability, and termination. Accessible from driver profile settings
 
 ### Backend (Express.js)
 
@@ -49,7 +49,8 @@ Preferred communication style: Simple, everyday language.
 
 #### Customer App
 - Browse 6 Indian destinations with details, highlights, and pricing
-- Book rides with vehicle type selection (sedan/SUV/luxury), date/time picker, pickup location
+- Book rides with vehicle type selection (5 Seater / 7 Seater), date/time picker, pickup location
+- **Auto-calculated pricing**: Under 10 km = ₹15/km, 10 km+ = ₹12/km. 7-seater adds ₹1/km extra. Fare computed via `calculateFare()` in `constants/data.ts`
 - **Coupon/promo code system**: Apply coupons during booking with real-time validation (expiry check, usage limits, min order amount), automatic discount calculation (percentage/flat with max caps), visual feedback with original fare strikethrough
 - **Driver details on trip cards**: Avatar, rating, vehicle info, license plate displayed on booking cards
 - **Rating/review system**: 5-star rating modal for completed rides with optional comments, duplicate review prevention via hasReview flag
@@ -57,7 +58,7 @@ Preferred communication style: Simple, everyday language.
 
 #### Driver App
 - **Dashboard**: Active ride requests with acceptance/rejection modal showing route preview, fare details, and passenger info; blocked account warning banner
-- **Earnings**: Period selection (today/week/month), gross/commission/net breakdown with configurable commission rates (5-30%), wallet balance with withdrawal request modal, transaction history
+- **Earnings**: Period selection (today/week/month), gross/commission/net breakdown with fixed 15% platform commission, wallet balance with withdrawal request modal, transaction history
 - **5-document KYC upload**: Driving license, RC, Aadhaar, insurance, PAN with 4-state verification workflow (not_uploaded → uploaded → verified/rejected), upload/expiry dates, rejection reasons, progress bar
 - **Profile**: Vehicle info, KYC status, document management, reviews, dark mode toggle
 

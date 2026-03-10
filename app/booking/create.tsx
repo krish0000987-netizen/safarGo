@@ -19,9 +19,9 @@ import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
-import { destinations, vehicleTypes, sampleDrivers } from "@/constants/data";
+import { destinations, vehicleTypes, sampleDrivers, calculateFare } from "@/constants/data";
 
-type VehicleType = "sedan" | "suv" | "luxury";
+type VehicleType = "sedan" | "suv";
 
 export default function CreateBooking() {
   const { destinationId, pickup: pickupParam } = useLocalSearchParams<{ destinationId: string; pickup?: string }>();
@@ -51,7 +51,7 @@ export default function CreateBooking() {
     );
   }
 
-  const baseFare = Math.round(destination.basePrice * vehicleTypes[vehicle].multiplier);
+  const baseFare = calculateFare(destination.distanceKm, vehicle);
   const fare = couponApplied ? baseFare - couponDiscount : baseFare;
 
   const handleApplyCoupon = () => {
@@ -150,7 +150,7 @@ export default function CreateBooking() {
           <View style={{ alignItems: "flex-end" }}>
             <Text style={[styles.destLabel, { color: colors.textSecondary }]}>{destination.distance} | {destination.duration}</Text>
             <View style={styles.pricePerKmBadge}>
-              <Text style={styles.pricePerKmText}>{"\u20B9"}{destination.pricePerKm}/km</Text>
+              <Text style={styles.pricePerKmText}>{"\u20B9"}{destination.distanceKm < 10 ? "15" : "12"}/km</Text>
             </View>
           </View>
         </Animated.View>
@@ -223,10 +223,10 @@ export default function CreateBooking() {
                   <Ionicons name={vt.icon as any} size={24} color={selected ? Colors.gold : colors.textSecondary} />
                   <Text style={[styles.vehicleName, { color: selected ? Colors.gold : colors.text }]}>{vt.name}</Text>
                   <Text style={[styles.vehicleCapacity, { color: colors.textSecondary }]}>
-                    Up to {vt.capacity}
+                    {vt.seats} seats
                   </Text>
                   <Text style={[styles.vehiclePrice, { color: selected ? Colors.gold : colors.text }]}>
-                    {"\u20B9"}{Math.round(destination.basePrice * vt.multiplier).toLocaleString()}
+                    {"\u20B9"}{calculateFare(destination.distanceKm, v as VehicleType).toLocaleString()}
                   </Text>
                 </Pressable>
               );
